@@ -1,8 +1,8 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useFormStatus } from "react-dom";
 import { handleContinueStory } from "@/app/actions";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,7 @@ export function Chat() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const initialState = { message: "", error: false, data: undefined };
-  const [state, formAction] = useFormState(handleContinueStory, initialState);
+  const [state, formAction] = useActionState(handleContinueStory, initialState);
 
   const { pending } = useFormStatus();
 
