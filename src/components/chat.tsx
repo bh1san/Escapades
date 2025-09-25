@@ -2,7 +2,8 @@
 
 import { useFormStatus } from "react-dom";
 import { handleContinueStory } from "@/app/actions";
-import { useEffect, useRef, useState, type FormEvent, useActionState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
