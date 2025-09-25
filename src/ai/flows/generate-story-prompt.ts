@@ -42,8 +42,8 @@ const generateStoryPromptFlow = ai.defineFlow(
   async () => {
     const {output} = await prompt();
 
-    if (!output) {
-      throw new Error("The model did not return a response.");
+    if (!output?.prompt) {
+      throw new Error("The model did not return a valid prompt.");
     }
 
     return output;
