@@ -1,7 +1,7 @@
 "use client";
 
 import { handleContinueStory } from "@/app/actions";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,9 +28,12 @@ export function Chat() {
   const scrollViewportRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const initialState = { message: "", error: false, data: undefined };
-  const [state, formAction, isPending] = useActionState(handleContinueStory, initialState);
+  const [state, formAction, isPending] = useActionState(handleContinueStory, {
+    message: "",
+    error: false,
+  });
 
+  // Effect to handle the result of the server action
   useEffect(() => {
     if (state.message && !isPending) {
       if (state.error) {
@@ -39,19 +42,20 @@ export function Chat() {
           title: "Error",
           description: state.message,
         });
-        // If there was an error, remove the user's last message from the UI
-        setMessages((currentMessages) => currentMessages.slice(0, -1));
+        // On error, remove the user's optimistic message
+        setMessages((currentMessages) =>
+          currentMessages.filter((msg, index) => index !== currentMessages.length - 1 || msg.role !== 'user')
+        );
       } else if (state.data) {
         setMessages((prevMessages) => [
           ...prevMessages,
           { role: "model", content: state.data.newChapter },
         ]);
-        formRef.current?.reset();
-        textareaRef.current?.focus();
       }
     }
   }, [state, isPending, toast]);
-
+  
+  // Effect to scroll to the bottom when new messages are added
   useEffect(() => {
     if (scrollViewportRef.current) {
       scrollViewportRef.current.scrollTo({
@@ -61,26 +65,29 @@ export function Chat() {
     }
   }, [messages]);
 
-  const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+  const handleSubmit = (formData: FormData) => {
     const prompt = formData.get("prompt") as string;
-    if (prompt.trim() && !isPending) {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { role: "user", content: prompt },
-      ]);
-      formAction(formData);
+    if (!prompt.trim() || isPending) {
+      return;
     }
+    
+    // Optimistically add user's message to the UI
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { role: "user", content: prompt },
+    ]);
+
+    formAction(formData);
+    formRef.current?.reset();
+    textareaRef.current?.focus();
   };
-  
+
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
+    if (event.key === 'Enter' && !event.shiftKey && !isPending) {
       event.preventDefault();
       formRef.current?.requestSubmit();
     }
   };
-
 
   return (
     <div className="relative flex h-full w-full flex-col">
@@ -133,7 +140,7 @@ export function Chat() {
       </ScrollArea>
       <div className="container mx-auto max-w-4xl pb-4 px-4">
          <Card className="mt-4 p-2 rounded-2xl shadow-lg">
-           <form ref={formRef} onSubmit={handleFormSubmit} className="flex items-center gap-2">
+           <form ref={formRef} action={handleSubmit} className="flex items-center gap-2">
              <input
                type="hidden"
                name="history"
