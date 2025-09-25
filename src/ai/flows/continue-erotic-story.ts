@@ -56,10 +56,10 @@ const prompt = ai.definePrompt({
   - Write a complete and detailed story. Do not stop in the middle.
   `,
   prompt: `{{#each history}}
-{{#if (eq role 'user')}}
-User prompt: {{{content}}}
+{{#if (this.role === 'user')}}
+User prompt: {{{this.content}}}
 {{else}}
-Story so far: {{{content}}}
+Story so far: {{{this.content}}}
 {{/if}}
 {{/each}}
 
