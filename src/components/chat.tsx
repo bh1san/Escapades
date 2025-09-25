@@ -126,7 +126,7 @@ export function Chat() {
   return (
     <>
       <HistorySidebar history={messages} onNewChat={startNewChat} />
-      <div className="relative flex h-dvh w-full flex-col">
+      <div className="relative flex h-full w-full flex-col">
          <header className="flex items-center justify-between p-4 border-b shrink-0 md:hidden">
             <Sheet>
                 <SheetTrigger asChild>
@@ -144,79 +144,81 @@ export function Chat() {
         <header className="hidden md:flex items-center justify-between p-4 border-b shrink-0">
           <h1 className="text-xl font-bold">Story Weaver</h1>
         </header>
-        <ScrollArea className="flex-1" viewportRef={scrollViewportRef}>
-          <div className="container mx-auto max-w-4xl py-8 px-4">
-            <div className="space-y-8">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    "flex items-start gap-4",
-                    message.role === "user" ? "justify-end" : "justify-start"
-                  )}
-                >
-                  {message.role === 'model' && (
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback>
-                        <Sparkles size={18} className="text-primary"/>
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
+        <div className="flex-1 overflow-y-auto">
+          <ScrollArea className="h-full" viewportRef={scrollViewportRef}>
+            <div className="container mx-auto max-w-4xl py-8 px-4">
+              <div className="space-y-8">
+                {messages.map((message, index) => (
                   <div
+                    key={index}
                     className={cn(
-                      "max-w-prose rounded-lg p-3 text-sm",
-                      message.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
+                      "flex items-start gap-4",
+                      message.role === "user" ? "justify-end" : "justify-start"
                     )}
                   >
-                    <div className="prose prose-sm max-w-none text-foreground prose-p:before:content-none prose-p:after:content-none">
-                      <ReactMarkdown>{message.content}</ReactMarkdown>
+                    {message.role === 'model' && (
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback>
+                          <Sparkles size={18} className="text-primary"/>
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div
+                      className={cn(
+                        "max-w-prose rounded-lg p-3 text-sm",
+                        message.role === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted"
+                      )}
+                    >
+                      <div className="prose prose-sm max-w-none text-foreground prose-p:before:content-none prose-p:after:content-none">
+                        <ReactMarkdown>{message.content}</ReactMarkdown>
+                      </div>
                     </div>
+                    {message.role === 'user' && (
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback>
+                          <User size={18} />
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
                   </div>
-                   {message.role === 'user' && (
+                ))}
+                {isPending && (
+                  <div className="flex items-start gap-4">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback>
-                        <User size={18} />
-                      </AvatarFallback>
+                          <Sparkles size={18} className="text-primary"/>
+                        </AvatarFallback>
                     </Avatar>
-                  )}
-                </div>
-              ))}
-              {isPending && (
-                <div className="flex items-start gap-4">
-                  <Avatar className="h-8 w-8">
-                     <AvatarFallback>
-                        <Sparkles size={18} className="text-primary"/>
-                      </AvatarFallback>
-                  </Avatar>
-                  <div className="bg-muted rounded-lg p-3">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                  </div>
-                </div>
-              )}
-               {!isPending && (suggestions.length > 0 || isLastMessageFromModel) && (
-                 <div className="flex justify-start">
-                    <div className="flex flex-wrap items-start gap-2 ml-12">
-                      {suggestions.map((suggestion, index) => (
-                        <Button key={index} variant="outline" size="sm" onClick={() => handleSuggestionClick(suggestion)}>
-                          <BotMessageSquare className="mr-2 h-4 w-4" />
-                          {suggestion}
-                        </Button>
-                      ))}
-                      {isLastMessageFromModel && (
-                        <Button variant="secondary" size="sm" onClick={handleContinueClick}>
-                          <Pilcrow className="mr-2 h-4 w-4" />
-                          Continue Story
-                        </Button>
-                      )}
+                    <div className="bg-muted rounded-lg p-3">
+                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                     </div>
-                 </div>
-               )}
+                  </div>
+                )}
+                {!isPending && (suggestions.length > 0 || isLastMessageFromModel) && (
+                  <div className="flex justify-start">
+                      <div className="flex flex-wrap items-start gap-2 ml-12">
+                        {suggestions.map((suggestion, index) => (
+                          <Button key={index} variant="outline" size="sm" onClick={() => handleSuggestionClick(suggestion)}>
+                            <BotMessageSquare className="mr-2 h-4 w-4" />
+                            {suggestion}
+                          </Button>
+                        ))}
+                        {isLastMessageFromModel && (
+                          <Button variant="secondary" size="sm" onClick={handleContinueClick}>
+                            <Pilcrow className="mr-2 h-4 w-4" />
+                            Continue Story
+                          </Button>
+                        )}
+                      </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </ScrollArea>
-        <div className="container mx-auto max-w-4xl pb-4 px-4 mt-auto">
+          </ScrollArea>
+        </div>
+        <div className="container mx-auto max-w-4xl pb-4 px-4 mt-auto shrink-0">
            <Card className="mt-4 p-2 rounded-2xl shadow-lg">
              <form ref={formRef} onSubmit={handleSubmit} className="flex items-center gap-2">
                <input
