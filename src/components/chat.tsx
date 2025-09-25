@@ -71,23 +71,23 @@ export function Chat() {
       });
     }
   }, [messages, suggestions]);
-  
+
   const submitPrompt = (prompt: string) => {
     if (!prompt.trim() || isPending) {
       return;
     }
-  
+    
     setMessages((prevMessages) => [
       ...prevMessages,
       { role: "user", content: prompt },
     ]);
     setSuggestions([]);
-  
+
     const formData = new FormData();
     formData.append("prompt", prompt);
     formData.append("history", JSON.stringify(messages));
     formAction(formData);
-  
+
     setCurrentPrompt("");
     if (textareaRef.current) {
       textareaRef.current.value = "";
