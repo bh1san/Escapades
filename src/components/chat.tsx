@@ -126,7 +126,7 @@ export function Chat() {
   return (
     <>
       <HistorySidebar history={messages} onNewChat={startNewChat} />
-      <div className="relative flex h-full max-h-screen w-full flex-col">
+      <div className="relative flex h-dvh w-full flex-col">
          <header className="flex items-center justify-between p-4 border-b shrink-0 md:hidden">
             <Sheet>
                 <SheetTrigger asChild>
@@ -197,7 +197,7 @@ export function Chat() {
               )}
                {!isPending && (suggestions.length > 0 || isLastMessageFromModel) && (
                  <div className="flex justify-start">
-                    <div className="flex flex-col items-start gap-2 ml-12">
+                    <div className="flex flex-wrap items-start gap-2 ml-12">
                       {suggestions.map((suggestion, index) => (
                         <Button key={index} variant="outline" size="sm" onClick={() => handleSuggestionClick(suggestion)}>
                           <BotMessageSquare className="mr-2 h-4 w-4" />
