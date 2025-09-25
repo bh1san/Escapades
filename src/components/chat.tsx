@@ -94,6 +94,13 @@ export function Chat() {
     }
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      formRef.current?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    }
+  };
+
   return (
     <div className="relative flex h-full w-full flex-col">
       <ScrollArea className="flex-1" viewportRef={scrollViewportRef}>
@@ -157,12 +164,7 @@ export function Chat() {
                placeholder="Tell me what happens next..."
                className="flex-1 resize-none border-0 shadow-none focus-visible:ring-0"
                rows={1}
-               onKeyDown={(e) => {
-                 if (e.key === "Enter" && !e.shiftKey) {
-                   e.preventDefault();
-                   formRef.current?.requestSubmit();
-                 }
-               }}
+               onKeyDown={handleKeyDown}
                disabled={pending}
              />
              <SubmitButton />
