@@ -148,7 +148,7 @@ export function Chat() {
   return (
     <>
       <HistorySidebar history={messages} onNewChat={startNewChat} />
-      <div className="relative flex h-full w-full flex-col">
+      <div className="relative flex h-full max-h-dvh w-full flex-col">
          <header className="flex items-center justify-between p-4 border-b shrink-0 md:hidden">
             <Sheet>
                 <SheetTrigger asChild>
