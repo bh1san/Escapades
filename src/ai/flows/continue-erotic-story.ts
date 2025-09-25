@@ -56,7 +56,7 @@ const prompt = ai.definePrompt({
   - Include her inner thoughts, showing her moral struggle. Her inner monologue should be in italics by enclosing it in single asterisks (*like this*).
   - Crucially, whenever Nabina first sees the man's large and thick penis, you must describe her mix of fear and intense curiosity in her inner monologue.
   - Use vivid sensory details: describe skin textures, body heat, clothing (e.g., thong, transparent saree), and physical reactions (e.g., wet pussy, hard nipples).
-  - Include step-by-step conversations with a mix of Hindi and English (Hinglish). All dialogue must be enclosed in double asterisks to make it **bold**.
+  - Include step-by-step conversations, including Nabina's replies, with a mix of Hindi and English (Hinglish). All dialogue must be enclosed in double asterisks to make it **bold**.
   - Incorporate erotic banter, with the man praising her body ("Ye boobs kitne juicy hain") and comparing himself to her husband ("Uska chhota lund kya karega?").
   - Maintain an intense, taboo-driven tone with explicit language (e.g., "cock," "pussy," "fuck") to match the original's rawness.
   - Use sensory-rich narration: describe smells (e.g., his cologne, her perfume), sounds (e.g., moans, slaps), and tactile sensations (e.g., cold jewelry on warm skin).
