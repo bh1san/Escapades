@@ -7,23 +7,22 @@ import { useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Loader2, Send, User, Bot, Sparkles } from "lucide-react";
+import { Loader2, Send, Sparkles, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Message } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
+function SubmitButton({ disabled }: { disabled: boolean }) {
   return (
     <Button
       type="submit"
       size="icon"
-      disabled={pending}
+      disabled={disabled}
       className="bg-primary/10 text-primary hover:bg-primary/20 rounded-full"
     >
-      {pending ? (
+      {disabled ? (
         <Loader2 className="h-4 w-4 animate-spin" />
       ) : (
         <Send className="h-4 w-4" />
@@ -41,7 +40,7 @@ const initialMessages: Message[] = [
   },
 ];
 
-export function Chat() {
+function ChatForm() {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
@@ -49,12 +48,10 @@ export function Chat() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const initialState = { message: "", error: false, data: undefined };
-  const [state, formAction] = useActionState(handleContinueStory, initialState);
-
-  const { pending } = useFormStatus();
+  const [state, formAction, isPending] = useActionState(handleContinueStory, initialState);
 
   useEffect(() => {
-    if (state.message && !pending) {
+    if (state.message && !isPending) {
       if (state.error) {
         toast({
           variant: "destructive",
@@ -71,7 +68,7 @@ export function Chat() {
         textareaRef.current?.focus();
       }
     }
-  }, [state, pending, toast]);
+  }, [state, isPending, toast]);
 
   useEffect(() => {
     if (scrollViewportRef.current) {
@@ -86,7 +83,7 @@ export function Chat() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const prompt = formData.get("prompt") as string;
-    if (prompt.trim()) {
+    if (prompt.trim() && !isPending) {
       setMessages((prevMessages) => [
         ...prevMessages,
         { role: "user", content: prompt },
@@ -136,7 +133,7 @@ export function Chat() {
                 </div>
               </div>
             ))}
-            {pending && (
+            {isPending && (
               <div className="flex items-start gap-4">
                 <Avatar className="h-8 w-8">
                    <AvatarFallback>
@@ -166,12 +163,17 @@ export function Chat() {
                className="flex-1 resize-none border-0 shadow-none focus-visible:ring-0"
                rows={1}
                onKeyDown={handleKeyDown}
-               disabled={pending}
+               disabled={isPending}
              />
-             <SubmitButton />
+             <SubmitButton disabled={isPending} />
            </form>
          </Card>
       </div>
     </div>
   );
+}
+
+
+export function Chat() {
+  return <ChatForm />;
 }
