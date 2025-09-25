@@ -1,34 +1,38 @@
 "use server";
 
 import { z } from "zod";
-import { generateEroticStory } from "@/ai/flows/generate-erotic-story";
-import { generateEroticConversation } from "@/ai/flows/generate-erotic-conversation";
-import type { Character } from "@/lib/types";
+import { continueEroticStory } from "@/ai/flows/continue-erotic-story";
+import type { Message } from "@/lib/types";
 
-const storySchema = z.object({
-  plot: z.string().min(10, "Please provide a more detailed plot."),
-  details: z.string().optional(),
-});
-
-const conversationSchema = z.object({
-  topic: z.string().min(10, "Please provide a more detailed topic."),
-  steps: z.coerce.number().min(2, "Must have at least 2 steps.").max(10, "Cannot exceed 10 steps."),
+const continueStorySchema = z.object({
+  history: z.array(z.object({
+    role: z.enum(["user", "model"]),
+    content: z.string(),
+  })),
+  prompt: z.string().min(1, "Prompt cannot be empty."),
 });
 
 type FormState = {
   message: string;
-  data?: any;
+  data?: { newChapter: string };
   error?: boolean;
 };
 
-export async function handleGenerateStory(
-  character: Character,
+export async function handleContinueStory(
   prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
-  const validatedFields = storySchema.safeParse({
-    plot: formData.get("plot"),
-    details: formData.get("details"),
+  let history: Message[];
+  try {
+    const historyString = formData.get("history") as string;
+    history = JSON.parse(historyString);
+  } catch (e) {
+    return { message: "Invalid chat history provided.", error: true };
+  }
+
+  const validatedFields = continueStorySchema.safeParse({
+    history,
+    prompt: formData.get("prompt"),
   });
 
   if (!validatedFields.success) {
@@ -37,48 +41,22 @@ export async function handleGenerateStory(
       error: true,
     };
   }
+  
+  const { history: validatedHistory, prompt } = validatedFields.data;
+
+  // Filter out the initial system message if it exists
+  const conversationHistory = validatedHistory.filter(
+    (msg, index) => !(index === 0 && msg.role === 'model' && msg.content.startsWith('You are an expert'))
+  );
 
   try {
-    const result = await generateEroticStory({
-      plot: validatedFields.data.plot,
-      details: validatedFields.data.details || "None",
-      characterName: character.name,
-      characterAge: character.age,
-      characterFigure: character.attributes,
+    const result = await continueEroticStory({
+      history: conversationHistory,
+      prompt,
     });
-    return { message: "Story generated successfully.", data: result };
+    return { message: "Story continued successfully.", data: result };
   } catch (error) {
-    return { message: "Failed to generate story. Please try again.", error: true };
-  }
-}
-
-export async function handleGenerateConversation(
-  character: Character,
-  prevState: FormState,
-  formData: FormData
-): Promise<FormState> {
-  const validatedFields = conversationSchema.safeParse({
-    topic: formData.get("topic"),
-    steps: formData.get("steps"),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      message: validatedFields.error.errors.map((e) => e.message).join(", "),
-      error: true,
-    };
-  }
-
-  try {
-    const result = await generateEroticConversation({
-      topic: validatedFields.data.topic,
-      steps: validatedFields.data.steps,
-      characterName: character.name,
-      characterAge: character.age,
-      characterFigure: character.attributes,
-    });
-    return { message: "Conversation generated successfully.", data: result };
-  } catch (error) {
-    return { message: "Failed to generate conversation. Please try again.", error: true };
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+    return { message: `Failed to continue story: ${errorMessage}`, error: true };
   }
 }
