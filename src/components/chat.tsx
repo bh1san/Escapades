@@ -1,6 +1,5 @@
 "use client";
 
-import { useFormStatus } from "react-dom";
 import { handleContinueStory } from "@/app/actions";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useActionState } from "react";
@@ -14,24 +13,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Message } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 
-function SubmitButton({ disabled }: { disabled: boolean }) {
-  return (
-    <Button
-      type="submit"
-      size="icon"
-      disabled={disabled}
-      className="bg-primary/10 text-primary hover:bg-primary/20 rounded-full"
-    >
-      {disabled ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <Send className="h-4 w-4" />
-      )}
-      <span className="sr-only">Send message</span>
-    </Button>
-  );
-}
-
 const initialMessages: Message[] = [
   {
     role: "model",
@@ -40,7 +21,7 @@ const initialMessages: Message[] = [
   },
 ];
 
-function ChatForm() {
+export function Chat() {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
@@ -58,7 +39,8 @@ function ChatForm() {
           title: "Error",
           description: state.message,
         });
-        setMessages((messages) => messages.slice(0, -1));
+        // If there was an error, remove the user's last message from the UI
+        setMessages((currentMessages) => currentMessages.slice(0, -1));
       } else if (state.data) {
         setMessages((prevMessages) => [
           ...prevMessages,
@@ -91,13 +73,14 @@ function ChatForm() {
       formAction(formData);
     }
   };
-
+  
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      formRef.current?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      formRef.current?.requestSubmit();
     }
   };
+
 
   return (
     <div className="relative flex h-full w-full flex-col">
@@ -165,15 +148,22 @@ function ChatForm() {
                onKeyDown={handleKeyDown}
                disabled={isPending}
              />
-             <SubmitButton disabled={isPending} />
+             <Button
+                type="submit"
+                size="icon"
+                disabled={isPending}
+                className="bg-primary/10 text-primary hover:bg-primary/20 rounded-full"
+              >
+                {isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+                <span className="sr-only">Send message</span>
+              </Button>
            </form>
          </Card>
       </div>
     </div>
   );
-}
-
-
-export function Chat() {
-  return <ChatForm />;
 }
