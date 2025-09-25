@@ -30,8 +30,6 @@ export function Chat() {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [currentPrompt, setCurrentPrompt] = useState("");
   const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
 
 
@@ -74,46 +72,50 @@ export function Chat() {
     }
   }, [messages, suggestions]);
 
-  const submitPrompt = (prompt: string) => {
-    if (!prompt.trim() || isPending) {
-      return;
-    }
-    
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      { role: "user", content: prompt },
-    ]);
-    setSuggestions([]);
+  const submitForm = () => {
+    if (formRef.current) {
+        const formData = new FormData(formRef.current);
+        const prompt = formData.get('prompt') as string;
 
-    const formData = new FormData();
-    formData.append("prompt", prompt);
-    formData.append("history", JSON.stringify(messages));
-    formAction(formData);
+        if (!prompt.trim() || isPending) {
+            return;
+        }
 
-    setCurrentPrompt("");
-    if (textareaRef.current) {
-      textareaRef.current.value = "";
-      textareaRef.current.focus();
+        setMessages((prevMessages) => [
+            ...prevMessages,
+            { role: "user", content: prompt },
+        ]);
+        setSuggestions([]);
+
+        formAction(formData);
+        formRef.current.reset();
+        formRef.current.querySelector('textarea')?.focus();
     }
   };
   
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    submitPrompt(currentPrompt);
+    submitForm();
   };
   
   const handleSuggestionClick = (suggestion: string) => {
-    submitPrompt(suggestion);
+    if (formRef.current) {
+        const promptTextarea = formRef.current.querySelector('textarea[name="prompt"]') as HTMLTextAreaElement;
+        if (promptTextarea) {
+            promptTextarea.value = suggestion;
+            submitForm();
+        }
+    }
   };
 
   const handleContinueClick = () => {
-    submitPrompt("Continue the story.");
+    handleSuggestionClick("Continue the story.");
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey && !isPending) {
       event.preventDefault();
-      submitPrompt(currentPrompt);
+      submitForm();
     }
   };
 
@@ -131,10 +133,11 @@ export function Chat() {
         title: "Error",
         description: result.message,
       });
-    } else if (result.prompt) {
-      setCurrentPrompt(result.prompt);
-      if (textareaRef.current) {
-        textareaRef.current.focus();
+    } else if (result.prompt && formRef.current) {
+      const promptTextarea = formRef.current.querySelector('textarea[name="prompt"]') as HTMLTextAreaElement;
+      if (promptTextarea) {
+        promptTextarea.value = result.prompt;
+        promptTextarea.focus();
       }
     }
     setIsGeneratingPrompt(false);
@@ -145,7 +148,7 @@ export function Chat() {
   return (
     <>
       <HistorySidebar history={messages} onNewChat={startNewChat} />
-      <div className="relative flex h-dvh w-full flex-col">
+      <div className="relative flex h-full w-full flex-col">
          <header className="flex items-center justify-between p-4 border-b shrink-0 md:hidden">
             <Sheet>
                 <SheetTrigger asChild>
@@ -261,20 +264,17 @@ export function Chat() {
                   <span className="sr-only">Generate story idea</span>
                 </Button>
                <Textarea
-                 ref={textareaRef}
                  name="prompt"
                  placeholder="Tell me what happens next..."
                  className="flex-1 resize-none border-0 shadow-none focus-visible:ring-0"
                  rows={1}
-                 value={currentPrompt}
-                 onChange={(e) => setCurrentPrompt(e.target.value)}
                  onKeyDown={handleKeyDown}
                  disabled={isPending}
                />
                <Button
                   type="submit"
                   size="icon"
-                  disabled={isPending || !currentPrompt.trim()}
+                  disabled={isPending}
                   className="bg-primary/10 text-primary hover:bg-primary/20 rounded-full"
                 >
                   {isPending ? (
