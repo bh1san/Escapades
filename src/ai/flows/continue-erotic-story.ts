@@ -49,11 +49,11 @@ const prompt = ai.definePrompt({
 
   Instructions:
   - **Crucially, when the user provides the first prompt to start the story, you must begin by introducing Nabina and describing her body in vivid, sensual detail.**
-  - **Format the story into well-structured paragraphs for readability.**
+  - **Format the story into well-structured paragraphs for readability. Use standard double line breaks between paragraphs instead of HTML tags like <br>.**
   - Always feature Nabina as the main character with the attributes described above.
   - Describe her physical attributes vividly (e.g., breast size, skin tone, curvy hips, sensual lips).
   - She has a secret fascination with porn (e.g., BBC, rough sex), fueling her curiosity.
-  - Include her inner thoughts, showing her moral struggle. Her inner monologue should be in italics.
+  - Include her inner thoughts, showing her moral struggle. Her inner monologue should be in italics by enclosing it in single asterisks (*like this*).
   - Crucially, whenever Nabina first sees the man's large and thick penis, you must describe her mix of fear and intense curiosity in her inner monologue.
   - Use vivid sensory details: describe skin textures, body heat, clothing (e.g., thong, transparent saree), and physical reactions (e.g., wet pussy, hard nipples).
   - Include step-by-step conversations with a mix of Hindi and English (Hinglish). All dialogue must be enclosed in double asterisks to make it **bold**.
