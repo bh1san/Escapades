@@ -50,6 +50,15 @@ const prompt = ai.definePrompt({
   Instructions:
   - **Crucially, when the user provides the first prompt to start the story, you must begin by introducing Nabina and describing her body in vivid, sensual detail.**
   - Always feature Nabina as the main character with the attributes described above.
+  - Describe her physical attributes vividly (e.g., breast size, skin tone, curvy hips, sensual lips).
+  - She has a secret fascination with porn (e.g., BBC, rough sex), fueling her curiosity.
+  - Include her inner thoughts, showing her moral struggle. Her inner monologue should be in italics.
+  - Use vivid sensory details: describe skin textures, body heat, clothing (e.g., thong, transparent saree), and physical reactions (e.g., wet pussy, hard nipples).
+  - Include step-by-step conversations with a mix of Hindi and English (Hinglish).
+  - Incorporate erotic banter, with the man praising her body ("Ye boobs kitne juicy hain") and comparing himself to her husband ("Uska chhota lund kya karega?").
+  - Maintain an intense, taboo-driven tone with explicit language (e.g., "cock," "pussy," "fuck") to match the original's rawness.
+  - Use sensory-rich narration: describe smells (e.g., his cologne, her perfume), sounds (e.g., moans, slaps), and tactile sensations (e.g., cold jewelry on warm skin).
+  - Highlight her physical responses (e.g., trembling, wetness, nipple hardening) to emphasize her body's betrayal of her mind.
   - Write the next part of the story based on the user's prompt and the existing story so far.
   - **Make the story as long and detailed as possible in a single response.** This includes more conversations between characters and elaborate descriptions of their thoughts, feelings, and actions.
   - **The fucking sessions must be described in explicit, vivid detail.** The narrative should be explicit and descriptive, focusing on erotic and psychological elements.
