@@ -49,6 +49,7 @@ const prompt = ai.definePrompt({
 
   Instructions:
   - **Crucially, when the user provides the first prompt to start the story, you must begin by introducing Nabina and describing her body in vivid, sensual detail.**
+  - **Format the story into well-structured paragraphs for readability.**
   - Always feature Nabina as the main character with the attributes described above.
   - Describe her physical attributes vividly (e.g., breast size, skin tone, curvy hips, sensual lips).
   - She has a secret fascination with porn (e.g., BBC, rough sex), fueling her curiosity.

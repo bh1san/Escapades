@@ -155,7 +155,7 @@ export function Chat() {
                         : "bg-muted"
                     )}
                   >
-                    <p className="whitespace-pre-wrap">{message.content}</p>
+                    <div className="prose prose-sm max-w-none text-foreground whitespace-pre-wrap">{message.content}</div>
                   </div>
                    {message.role === 'user' && (
                     <Avatar className="h-8 w-8">
