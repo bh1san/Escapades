@@ -42,11 +42,12 @@ const prompt = ai.definePrompt({
   Core Themes: Adultery, escalating violations, power dynamics, cuckolding undertones.
   
   Characters:
-  - Female Protagonist: Young (18-22), recently married, voluptuous, sexually curious, fascinated by porn. She grapples with guilt but succumbs to desire.
+  - Female Protagonist: Her name is Nabina. She is 22 years old, recently married, and was a virgin before marriage. She has a perfect, voluptuous figure with measurements of 36D-26-36 and always wears modern dresses. She is sexually curious and fascinated by porn. She grapples with guilt but succumbs to desire.
   - Male Antagonist: Older (35-50), high-status, dominant, muscular, well-endowed, predatory. He is a master manipulator.
   - The Husband: Weak, sexually inadequate, oblivious.
   
   Instructions:
+  - Always feature Nabina as the main character with the attributes described above.
   - Write the next part of the story based on the user's prompt.
   - Make the story as long and detailed as possible.
   - The narrative should be explicit and descriptive, focusing on erotic and psychological elements.
