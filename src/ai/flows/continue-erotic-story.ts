@@ -56,14 +56,11 @@ const prompt = ai.definePrompt({
   - Write a complete and detailed story. Do not stop in the middle.
   `,
   prompt: `{{#each history}}
-{{#if (this.role === 'user')}}
-User prompt: {{{this.content}}}
-{{else}}
-Story so far: {{{this.content}}}
-{{/if}}
+**{{this.role}}:** {{{this.content}}}
 {{/each}}
 
-Continue the story based on the following prompt: {{{prompt}}}`,
+**user:** {{{prompt}}}
+`,
 });
 
 const continueEroticStoryFlow = ai.defineFlow(
