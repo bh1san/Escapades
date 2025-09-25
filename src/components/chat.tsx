@@ -1,11 +1,11 @@
 "use client";
 
-import { handleContinueStory } from "@/app/actions";
+import { handleContinueStory, handleGeneratePrompt } from "@/app/actions";
 import { useEffect, useRef, useState, useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Loader2, Send, Sparkles, User, BotMessageSquare, Pilcrow, PanelLeft } from "lucide-react";
+import { Loader2, Send, Sparkles, User, BotMessageSquare, Pilcrow, PanelLeft, Wand } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -32,6 +32,7 @@ export function Chat() {
   const scrollViewportRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [currentPrompt, setCurrentPrompt] = useState("");
+  const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
 
 
   const [state, formAction, isPending] = useActionState(handleContinueStory, {
@@ -121,12 +122,30 @@ export function Chat() {
     setSuggestions([]);
   };
 
+  const generatePrompt = async () => {
+    setIsGeneratingPrompt(true);
+    const result = await handleGeneratePrompt();
+    if (result.error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: result.message,
+      });
+    } else if (result.prompt) {
+      setCurrentPrompt(result.prompt);
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    }
+    setIsGeneratingPrompt(false);
+  };
+
   const isLastMessageFromModel = messages.length > 1 && messages[messages.length - 1].role === 'model';
 
   return (
     <>
       <HistorySidebar history={messages} onNewChat={startNewChat} />
-      <div className="relative flex h-full w-full flex-col">
+      <div className="relative flex h-dvh w-full flex-col">
          <header className="flex items-center justify-between p-4 border-b shrink-0 md:hidden">
             <Sheet>
                 <SheetTrigger asChild>
@@ -226,6 +245,21 @@ export function Chat() {
                  name="history"
                  value={JSON.stringify(messages)}
                />
+               <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={generatePrompt}
+                  disabled={isGeneratingPrompt || isPending}
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  {isGeneratingPrompt ? (
+                     <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Wand className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">Generate story idea</span>
+                </Button>
                <Textarea
                  ref={textareaRef}
                  name="prompt"

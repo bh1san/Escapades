@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { continueEroticStory } from "@/ai/flows/continue-erotic-story";
+import { generateStoryPrompt } from "@/ai/flows/generate-story-prompt";
 import type { Message } from "@/lib/types";
 
 const continueStorySchema = z.object({
@@ -58,5 +59,21 @@ export async function handleContinueStory(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
     return { message: `Failed to continue story: ${errorMessage}`, error: true };
+  }
+}
+
+type GeneratePromptState = {
+  prompt?: string;
+  message: string;
+  error?: boolean;
+};
+
+export async function handleGeneratePrompt(): Promise<GeneratePromptState> {
+  try {
+    const result = await generateStoryPrompt();
+    return { message: "Prompt generated successfully.", prompt: result.prompt };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+    return { message: `Failed to generate prompt: ${errorMessage}`, error: true };
   }
 }
