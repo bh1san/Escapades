@@ -14,7 +14,7 @@ const continueStorySchema = z.object({
 
 type FormState = {
   message: string;
-  data?: { newChapter: string };
+  data?: { newChapter: string; suggestions?: string[] };
   error?: boolean;
 };
 

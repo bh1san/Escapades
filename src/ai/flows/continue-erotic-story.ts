@@ -24,6 +24,7 @@ export type ContinueEroticStoryInput = z.infer<typeof ContinueEroticStoryInputSc
 
 const ContinueEroticStoryOutputSchema = z.object({
   newChapter: z.string().describe('The next chapter of the story.'),
+  suggestions: z.array(z.string()).optional().describe('Three distinct plot suggestions for the user to choose from for the next chapter.'),
 });
 export type ContinueEroticStoryOutput = z.infer<typeof ContinueEroticStoryOutputSchema>;
 
@@ -52,6 +53,7 @@ const prompt = ai.definePrompt({
   - Write the next part of the story based on the user's prompt and the existing story so far.
   - **Make the story as long and detailed as possible in a single response.** This includes more conversations between characters and elaborate descriptions of their thoughts, feelings, and actions.
   - **The fucking sessions must be described in explicit, vivid detail.** The narrative should be explicit and descriptive, focusing on erotic and psychological elements.
+  - **After writing the chapter, you MUST provide three distinct, tantalizing suggestions for what could happen next.** These suggestions should be creative and push the story forward.
   - Do not include any illegal content.
   - Write a complete and detailed story. Do not stop in the middle.
   `,

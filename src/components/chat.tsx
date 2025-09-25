@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Loader2, Send, Sparkles, User, Plus } from "lucide-react";
+import { Loader2, Send, Sparkles, User, Plus, BotMessageSquare, Pilcrow } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -23,6 +23,7 @@ const initialMessages: Message[] = [
 
 export function Chat() {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
@@ -46,11 +47,13 @@ export function Chat() {
         setMessages((currentMessages) =>
           currentMessages.filter((msg, index) => index !== currentMessages.length - 1 || msg.role !== 'user')
         );
+        setSuggestions([]);
       } else if (state.data) {
         setMessages((prevMessages) => [
           ...prevMessages,
           { role: "model", content: state.data.newChapter },
         ]);
+        setSuggestions(state.data.suggestions || []);
       }
     }
   }, [state, isPending, toast]);
@@ -63,24 +66,44 @@ export function Chat() {
         behavior: "smooth",
       });
     }
-  }, [messages]);
+  }, [messages, suggestions]);
 
-  const handleSubmit = (formData: FormData) => {
-    const prompt = formData.get("prompt") as string;
+  const submitPrompt = (prompt: string) => {
     if (!prompt.trim() || isPending) {
       return;
     }
-    
-    // Optimistically add user's message to the UI
+
     setMessages((prevMessages) => [
       ...prevMessages,
       { role: "user", content: prompt },
     ]);
+    setSuggestions([]);
 
+    const formData = new FormData();
+    formData.append("prompt", prompt);
+    formData.append("history", JSON.stringify(messages));
     formAction(formData);
-    formRef.current?.reset();
-    textareaRef.current?.focus();
+
+    if (formRef.current) {
+      formRef.current.reset();
+    }
+    if(textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }
+
+  const handleSubmit = (formData: FormData) => {
+    const prompt = formData.get("prompt") as string;
+    submitPrompt(prompt);
   };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    submitPrompt(suggestion);
+  }
+
+  const handleContinueClick = () => {
+    submitPrompt("Continue the story.");
+  }
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey && !isPending) {
@@ -94,18 +117,17 @@ export function Chat() {
 
   const startNewChat = () => {
     setMessages(initialMessages);
+    setSuggestions([]);
   };
+
+  const isLastMessageFromModel = messages.length > 1 && messages[messages.length - 1].role === 'model';
 
   return (
     <>
       <HistorySidebar history={messages} onNewChat={startNewChat} />
-      <div className="relative flex h-full w-full flex-col">
-        <header className="flex items-center justify-between p-4 border-b">
+      <div className="relative flex h-full max-h-screen w-full flex-col">
+        <header className="flex items-center justify-between p-4 border-b shrink-0">
           <h1 className="text-xl font-bold">Story Weaver</h1>
-          <Button variant="outline" size="sm" onClick={startNewChat}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Chat
-          </Button>
         </header>
         <ScrollArea className="flex-1" viewportRef={scrollViewportRef}>
           <div className="container mx-auto max-w-4xl py-8 px-4">
@@ -156,10 +178,28 @@ export function Chat() {
                   </div>
                 </div>
               )}
+               {!isPending && (suggestions.length > 0 || isLastMessageFromModel) && (
+                 <div className="flex justify-start">
+                    <div className="flex flex-col items-start gap-2 ml-12">
+                      {suggestions.map((suggestion, index) => (
+                        <Button key={index} variant="outline" size="sm" onClick={() => handleSuggestionClick(suggestion)}>
+                          <BotMessageSquare className="mr-2 h-4 w-4" />
+                          {suggestion}
+                        </Button>
+                      ))}
+                      {isLastMessageFromModel && (
+                        <Button variant="secondary" size="sm" onClick={handleContinueClick}>
+                          <Pilcrow className="mr-2 h-4 w-4" />
+                          Continue Story
+                        </Button>
+                      )}
+                    </div>
+                 </div>
+               )}
             </div>
           </div>
         </ScrollArea>
-        <div className="container mx-auto max-w-4xl pb-4 px-4">
+        <div className="container mx-auto max-w-4xl pb-4 px-4 mt-auto">
            <Card className="mt-4 p-2 rounded-2xl shadow-lg">
              <form ref={formRef} action={handleSubmit} className="flex items-center gap-2">
                <input
