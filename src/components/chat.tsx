@@ -5,13 +5,15 @@ import { useEffect, useRef, useState, useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Loader2, Send, Sparkles, User, Plus, BotMessageSquare, Pilcrow } from "lucide-react";
+import { Loader2, Send, Sparkles, User, BotMessageSquare, Pilcrow } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Message } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { HistorySidebar } from "@/components/history-sidebar";
+import ReactMarkdown from 'react-markdown';
+
 
 const initialMessages: Message[] = [
   {
@@ -124,7 +126,10 @@ export function Chat() {
     <>
       <HistorySidebar history={messages} onNewChat={startNewChat} />
       <div className="relative flex h-full max-h-screen w-full flex-col">
-        <header className="flex items-center justify-between p-4 border-b shrink-0">
+        <header className="flex items-center justify-between p-4 border-b shrink-0 md:hidden">
+          <h1 className="text-xl font-bold">Story Weaver</h1>
+        </header>
+        <header className="hidden md:flex items-center justify-between p-4 border-b shrink-0">
           <h1 className="text-xl font-bold">Story Weaver</h1>
         </header>
         <ScrollArea className="flex-1" viewportRef={scrollViewportRef}>
@@ -153,7 +158,9 @@ export function Chat() {
                         : "bg-muted"
                     )}
                   >
-                    <div className="prose prose-sm max-w-none text-foreground whitespace-pre-wrap">{message.content}</div>
+                    <div className="prose prose-sm max-w-none text-foreground prose-p:before:content-none prose-p:after:content-none">
+                      <ReactMarkdown>{message.content}</ReactMarkdown>
+                    </div>
                   </div>
                    {message.role === 'user' && (
                     <Avatar className="h-8 w-8">

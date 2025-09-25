@@ -86,7 +86,20 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         "fade-in": "fade-in 0.5s ease-in-out",
       },
+      typography: {
+        DEFAULT: {
+          css: {
+            p: {
+              'margin-top': '0',
+              'margin-bottom': '0',
+            },
+          },
+        },
+      },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    require('@tailwindcss/typography'),
+  ],
 } satisfies Config;
