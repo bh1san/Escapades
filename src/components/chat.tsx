@@ -85,7 +85,10 @@ export function Chat() {
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey && !isPending) {
       event.preventDefault();
-      formRef.current?.requestSubmit();
+      if (formRef.current) {
+        const formData = new FormData(formRef.current);
+        handleSubmit(formData);
+      }
     }
   };
 
