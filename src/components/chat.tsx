@@ -1,7 +1,8 @@
 "use client";
 
 import { handleContinueStory } from "@/app/actions";
-import { useEffect, useRef, useState, useActionState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useFormState } from "react-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -28,8 +29,10 @@ export function Chat() {
   const formRef = useRef<HTMLFormElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [currentPrompt, setCurrentPrompt] = useState("");
 
-  const [state, formAction, isPending] = useActionState(handleContinueStory, {
+
+  const [state, formAction, isPending] = useFormState(handleContinueStory, {
     message: "",
     error: false,
   });
@@ -67,51 +70,47 @@ export function Chat() {
       });
     }
   }, [messages, suggestions]);
-
+  
   const submitPrompt = (prompt: string) => {
     if (!prompt.trim() || isPending) {
       return;
     }
-
+  
     setMessages((prevMessages) => [
       ...prevMessages,
       { role: "user", content: prompt },
     ]);
     setSuggestions([]);
-
+  
     const formData = new FormData();
     formData.append("prompt", prompt);
     formData.append("history", JSON.stringify(messages));
     formAction(formData);
-
-    if (formRef.current) {
-      formRef.current.reset();
-    }
-    if(textareaRef.current) {
+  
+    setCurrentPrompt("");
+    if (textareaRef.current) {
+      textareaRef.current.value = "";
       textareaRef.current.focus();
     }
-  }
-
-  const handleSubmit = (formData: FormData) => {
-    const prompt = formData.get("prompt") as string;
-    submitPrompt(prompt);
   };
-
+  
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    submitPrompt(currentPrompt);
+  };
+  
   const handleSuggestionClick = (suggestion: string) => {
     submitPrompt(suggestion);
-  }
+  };
 
   const handleContinueClick = () => {
     submitPrompt("Continue the story.");
-  }
+  };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey && !isPending) {
       event.preventDefault();
-      if (formRef.current) {
-        const formData = new FormData(formRef.current);
-        handleSubmit(formData);
-      }
+      submitPrompt(currentPrompt);
     }
   };
 
@@ -201,7 +200,7 @@ export function Chat() {
         </ScrollArea>
         <div className="container mx-auto max-w-4xl pb-4 px-4 mt-auto">
            <Card className="mt-4 p-2 rounded-2xl shadow-lg">
-             <form ref={formRef} action={handleSubmit} className="flex items-center gap-2">
+             <form ref={formRef} onSubmit={handleSubmit} className="flex items-center gap-2">
                <input
                  type="hidden"
                  name="history"
@@ -213,13 +212,15 @@ export function Chat() {
                  placeholder="Tell me what happens next..."
                  className="flex-1 resize-none border-0 shadow-none focus-visible:ring-0"
                  rows={1}
+                 value={currentPrompt}
+                 onChange={(e) => setCurrentPrompt(e.target.value)}
                  onKeyDown={handleKeyDown}
                  disabled={isPending}
                />
                <Button
                   type="submit"
                   size="icon"
-                  disabled={isPending}
+                  disabled={isPending || !currentPrompt.trim()}
                   className="bg-primary/10 text-primary hover:bg-primary/20 rounded-full"
                 >
                   {isPending ? (
