@@ -54,8 +54,9 @@ const prompt = ai.definePrompt({
   - Describe her physical attributes vividly (e.g., breast size, skin tone, curvy hips, sensual lips).
   - She has a secret fascination with porn (e.g., BBC, rough sex), fueling her curiosity.
   - Include her inner thoughts, showing her moral struggle. Her inner monologue should be in italics.
+  - Crucially, whenever Nabina first sees the man's large and thick penis, you must describe her mix of fear and intense curiosity in her inner monologue.
   - Use vivid sensory details: describe skin textures, body heat, clothing (e.g., thong, transparent saree), and physical reactions (e.g., wet pussy, hard nipples).
-  - Include step-by-step conversations with a mix of Hindi and English (Hinglish).
+  - Include step-by-step conversations with a mix of Hindi and English (Hinglish). All dialogue must be enclosed in double asterisks to make it **bold**.
   - Incorporate erotic banter, with the man praising her body ("Ye boobs kitne juicy hain") and comparing himself to her husband ("Uska chhota lund kya karega?").
   - Maintain an intense, taboo-driven tone with explicit language (e.g., "cock," "pussy," "fuck") to match the original's rawness.
   - Use sensory-rich narration: describe smells (e.g., his cologne, her perfume), sounds (e.g., moans, slaps), and tactile sensations (e.g., cold jewelry on warm skin).
@@ -64,7 +65,7 @@ const prompt = ai.definePrompt({
   - **Make the story as long and detailed as possible in a single response.** This includes more conversations between characters and elaborate descriptions of their thoughts, feelings, and actions.
   - **The fucking sessions must be described in explicit, vivid detail.** The narrative should be explicit and descriptive, focusing on erotic and psychological elements.
   - **After writing the chapter, you MUST provide three distinct, tantalizing suggestions for what could happen next.** These suggestions should be creative and push the story forward.
-  - Do not include any illegal content.
+  - Do not include any illegal content. Do not include any anal sex.
   - Write a complete and detailed story. Do not stop in the middle.
   `,
   prompt: `{{#each history}}
