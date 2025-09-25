@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Loader2, Send, Sparkles, User, BotMessageSquare, Pilcrow } from "lucide-react";
+import { Loader2, Send, Sparkles, User, BotMessageSquare, Pilcrow, PanelLeft } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -13,6 +13,7 @@ import type { Message } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { HistorySidebar } from "@/components/history-sidebar";
 import ReactMarkdown from 'react-markdown';
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 
 const initialMessages: Message[] = [
@@ -126,8 +127,19 @@ export function Chat() {
     <>
       <HistorySidebar history={messages} onNewChat={startNewChat} />
       <div className="relative flex h-full max-h-screen w-full flex-col">
-        <header className="flex items-center justify-between p-4 border-b shrink-0 md:hidden">
-          <h1 className="text-xl font-bold">Story Weaver</h1>
+         <header className="flex items-center justify-between p-4 border-b shrink-0 md:hidden">
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                        <PanelLeft className="h-5 w-5" />
+                        <span className="sr-only">Toggle History</span>
+                    </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="p-0">
+                    <HistorySidebar history={messages} onNewChat={startNewChat} isMobile={true}/>
+                </SheetContent>
+            </Sheet>
+            <h1 className="text-xl font-bold">Story Weaver</h1>
         </header>
         <header className="hidden md:flex items-center justify-between p-4 border-b shrink-0">
           <h1 className="text-xl font-bold">Story Weaver</h1>
