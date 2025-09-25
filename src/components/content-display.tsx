@@ -39,6 +39,22 @@ export function ContentDisplay({ title, content, type }: ContentDisplayProps) {
     })
   };
 
+  const renderStoryContent = (storyContent: string | string[]) => {
+    if (Array.isArray(storyContent)) {
+      return (
+        <div className="space-y-6">
+          {storyContent.map((chapter, index) => (
+            <div key={index}>
+              <h3 className="text-xl font-bold font-headline mb-2">Chapter {index + 1}</h3>
+              <p className="whitespace-pre-wrap leading-relaxed">{chapter}</p>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return <p className="whitespace-pre-wrap leading-relaxed">{storyContent}</p>;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -48,7 +64,7 @@ export function ContentDisplay({ title, content, type }: ContentDisplayProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {type === 'story' && <p className="whitespace-pre-wrap leading-relaxed">{content}</p>}
+        {type === 'story' && renderStoryContent(content)}
         {type === 'conversation' && Array.isArray(content) && (
           <div className="space-y-4">
             {content.map((line, index) => (

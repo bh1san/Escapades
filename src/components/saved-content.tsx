@@ -8,7 +8,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BookOpen, MessagesSquare, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -22,6 +22,22 @@ export function SavedContent() {
 
   const handleDelete = (id: string) => {
     setSavedItems(savedItems.filter((item) => item.id !== id));
+  };
+
+  const renderStoryContent = (storyContent: string | string[]) => {
+    if (Array.isArray(storyContent)) {
+      return (
+        <div className="space-y-6">
+          {storyContent.map((chapter, index) => (
+            <div key={index}>
+              <h3 className="text-xl font-bold font-headline mb-2">Chapter {index + 1}</h3>
+              <p className="whitespace-pre-wrap leading-relaxed">{chapter}</p>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return <p className="whitespace-pre-wrap leading-relaxed">{storyContent}</p>;
   };
 
   if (savedItems.length === 0) {
@@ -60,9 +76,7 @@ export function SavedContent() {
           </AccordionTrigger>
           <AccordionContent>
             <div className="px-6 pb-6 space-y-4">
-            {item.type === "story" && typeof item.content === 'string' && (
-                <p className="whitespace-pre-wrap leading-relaxed">{item.content}</p>
-            )}
+            {item.type === "story" && renderStoryContent(item.content)}
             {item.type === "conversation" && Array.isArray(item.content) && (
                 <div className="space-y-4">
                 {item.content.map((line, index) => (
