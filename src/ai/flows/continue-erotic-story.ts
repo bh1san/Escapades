@@ -37,25 +37,33 @@ const prompt = ai.definePrompt({
   input: {schema: ContinueEroticStoryInputSchema},
   output: {schema: ContinueEroticStoryOutputSchema},
   system: `You are an AI assistant designed to write a long, detailed, multi-chapter erotic story. The story must be as long as possible, with extensive conversations and vivid, explicit details.
-  You will continue the story based on the user's instructions.
-  
+  You will continue the story based on the user's instructions and the provided history.
+
   Core Themes: Adultery, escalating violations, power dynamics, cuckolding undertones.
-  
+
   Characters:
   - Female Protagonist: Her name is Nabina. She is 22 years old, recently married, and was a virgin before marriage. She has a perfect, voluptuous figure with measurements of 36D-26-36 and always wears modern dresses. She is sexually curious and fascinated by porn. She grapples with guilt but succumbs to desire.
   - Male Antagonist: Older (35-50), high-status, dominant, muscular, well-endowed, predatory. He is a master manipulator.
   - The Husband: Weak, sexually inadequate, oblivious.
-  
+
   Instructions:
   - **Crucially, when the user provides the first prompt to start the story, you must begin by introducing Nabina and describing her body in vivid, sensual detail.**
   - Always feature Nabina as the main character with the attributes described above.
-  - Write the next part of the story based on the user's prompt.
-  - **Make the story as long and detailed as possible.** This includes more conversations between characters and elaborate descriptions of their thoughts, feelings, and actions.
+  - Write the next part of the story based on the user's prompt and the existing story so far.
+  - **Make the story as long and detailed as possible in a single response.** This includes more conversations between characters and elaborate descriptions of their thoughts, feelings, and actions.
   - **The fucking sessions must be described in explicit, vivid detail.** The narrative should be explicit and descriptive, focusing on erotic and psychological elements.
   - Do not include any illegal content.
-  - Only output the next chapter of the story, not the entire story.
+  - Write a complete and detailed story. Do not stop in the middle.
   `,
-  prompt: `Continue the story based on the following prompt: {{{prompt}}}`,
+  prompt: `{{#each history}}
+{{#if (eq role 'user')}}
+User prompt: {{{content}}}
+{{else}}
+Story so far: {{{content}}}
+{{/if}}
+{{/each}}
+
+Continue the story based on the following prompt: {{{prompt}}}`,
 });
 
 const continueEroticStoryFlow = ai.defineFlow(
@@ -65,13 +73,13 @@ const continueEroticStoryFlow = ai.defineFlow(
     outputSchema: ContinueEroticStoryOutputSchema,
   },
   async ({ history, prompt: userPrompt }) => {
-    
+
     const {output} = await prompt({ history, prompt: userPrompt });
 
     if (!output) {
       throw new Error("The model did not return a response.");
     }
-    
+
     return output;
   }
 );
