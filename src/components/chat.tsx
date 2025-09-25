@@ -1,8 +1,7 @@
 "use client";
 
 import { handleContinueStory } from "@/app/actions";
-import { useEffect, useRef, useState } from "react";
-import { useFormState } from "react-dom";
+import { useEffect, useRef, useState, useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,7 @@ export function Chat() {
   const [currentPrompt, setCurrentPrompt] = useState("");
 
 
-  const [state, formAction, isPending] = useFormState(handleContinueStory, {
+  const [state, formAction, isPending] = useActionState(handleContinueStory, {
     message: "",
     error: false,
   });
