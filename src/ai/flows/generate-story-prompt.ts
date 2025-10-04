@@ -46,6 +46,6 @@ const generateStoryPromptFlow = ai.defineFlow(
       throw new Error("The model did not return a valid prompt.");
     }
 
-    return output;
+    return { prompt: output.prompt };
   }
 );
