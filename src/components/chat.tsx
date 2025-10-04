@@ -73,7 +73,7 @@ export function Chat() {
             return;
         }
 
-        setMessages([initialMessage, { role: "user", content: prompt }]);
+        setMessages([{ role: "user", content: prompt }]);
         formAction(formData);
         formRef.current.reset();
         formRef.current.querySelector('textarea')?.focus();
@@ -214,6 +214,7 @@ export function Chat() {
                   <span className="sr-only">Generate story idea</span>
                 </Button>
                <Textarea
+                 suppressHydrationWarning
                  name="prompt"
                  placeholder="Tell me what happens next..."
                  className="flex-1 resize-none border-0 shadow-none focus-visible:ring-0"
