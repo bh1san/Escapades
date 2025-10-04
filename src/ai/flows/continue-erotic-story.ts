@@ -16,7 +16,7 @@ export async function generateFullEroticStory(prompt: string): Promise<string> {
 
 const storyPrompt = ai.definePrompt({
   name: 'generateFullEroticStoryPrompt',
-  input: {schema: z.string() },
+  input: {schema: z.string()},
   system: `You are an AI assistant designed to write a long, detailed, multi-chapter romantic and sensual story in a single response. The story must be as long as possible, with extensive conversations and vivid details.
 
   Core Themes: Forbidden romance, escalating tension, power dynamics, secret desires, and detailed sexual encounters.

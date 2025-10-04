@@ -5,42 +5,24 @@ import { z } from "zod";
 import { generateFullEroticStory } from "@/ai/flows/continue-erotic-story";
 import { generateStoryPrompt } from "@/ai/flows/generate-story-prompt";
 
-const generateStorySchema = z.object({
-  prompt: z.string().min(1, "Prompt cannot be empty."),
-});
-
-type FormState = {
-  message: string;
-  data?: { story: string };
-  error?: boolean;
-};
-
-export async function handleGenerateStory(
-  prevState: FormState,
-  formData: FormData
-): Promise<FormState> {
-  const validatedFields = generateStorySchema.safeParse({
-    prompt: formData.get("prompt"),
-  });
+export async function handleGenerateStory(prompt: string): Promise<string> {
+  const generateStorySchema = z.string().min(1, "Prompt cannot be empty.");
+  
+  const validatedFields = generateStorySchema.safeParse(prompt);
 
   if (!validatedFields.success) {
-    return {
-      message: validatedFields.error.errors.map((e) => e.message).join(", "),
-      error: true,
-    };
+    throw new Error(validatedFields.error.errors.map((e) => e.message).join(", "));
   }
-  
-  const { prompt } = validatedFields.data;
 
   try {
-    const result = await generateFullEroticStory(prompt);
+    const result = await generateFullEroticStory(validatedFields.data);
     if (typeof result === 'string' && result.length > 0) {
-      return { message: "Story generated successfully.", data: { story: result } };
+      return result;
     }
-    return { message: "Failed to generate story: The model returned an empty response.", error: true };
+    throw new Error("The model returned an empty response.");
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-    return { message: `Failed to generate story: ${errorMessage}`, error: true };
+    throw new Error(`Failed to generate story: ${errorMessage}`);
   }
 }
 

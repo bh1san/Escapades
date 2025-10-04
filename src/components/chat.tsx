@@ -26,15 +26,10 @@ const initialMessage: Message = {
 
 export function Chat() {
   const [messages, setMessages] = useState<Message[]>([initialMessage]);
+  const [isStoryPending, setIsStoryPending] = useState(false);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
-
-  const [storyState, storyFormAction, isStoryPending] = useActionState(handleGenerateStory, {
-    message: "",
-    data: { story: ""},
-    error: false,
-  });
 
   const [promptState, promptFormAction, isPromptPending] = useActionState(handleGeneratePrompt, {
     message: "",
@@ -42,26 +37,6 @@ export function Chat() {
     error: false,
   });
 
-  useEffect(() => {
-    if (storyState.message && !isStoryPending) {
-      if (storyState.error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: storyState.message,
-        });
-        setMessages((currentMessages) =>
-          currentMessages.filter((msg, index) => index !== currentMessages.length - 1 || msg.role !== 'user')
-        );
-      } else if (storyState.data?.story && typeof storyState.data.story === 'string') {
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { role: "model", content: storyState.data.story },
-        ]);
-      }
-    }
-  }, [storyState, isStoryPending, toast]);
-  
   useEffect(() => {
     if (promptState.message && !isPromptPending) {
         if (promptState.error) {
@@ -89,14 +64,31 @@ export function Chat() {
     }
   }, [messages, isStoryPending]);
 
-  const handleFormSubmit = (formData: FormData) => {
+  const handleFormSubmit = async (formData: FormData) => {
     const prompt = formData.get('prompt') as string;
     if (!prompt.trim() || isStoryPending) {
         return;
     }
-    setMessages((prev) => [...prev, { role: "user", content: prompt }]);
-    storyFormAction(formData);
+    
     formRef.current?.reset();
+    setMessages((prev) => [...prev, { role: "user", content: prompt }]);
+    setIsStoryPending(true);
+
+    try {
+        const story = await handleGenerateStory(prompt);
+        setMessages((prev) => [...prev, { role: "model", content: story }]);
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: errorMessage,
+        });
+        // Remove the user message that led to the error
+        setMessages(currentMessages => currentMessages.slice(0, -1));
+    } finally {
+        setIsStoryPending(false);
+    }
   }
   
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
