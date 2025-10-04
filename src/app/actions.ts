@@ -1,38 +1,24 @@
 "use server";
 
 import { z } from "zod";
-import { continueEroticStory } from "@/ai/flows/continue-erotic-story";
+import { generateFullEroticStory } from "@/ai/flows/continue-erotic-story";
 import { generateStoryPrompt } from "@/ai/flows/generate-story-prompt";
-import type { Message } from "@/lib/types";
 
-const continueStorySchema = z.object({
-  history: z.array(z.object({
-    role: z.enum(["user", "model"]),
-    content: z.string(),
-  })),
+const generateStorySchema = z.object({
   prompt: z.string().min(1, "Prompt cannot be empty."),
 });
 
 type FormState = {
   message: string;
-  data?: { newChapter: string; suggestions?: string[] };
+  data?: { story: string };
   error?: boolean;
 };
 
-export async function handleContinueStory(
+export async function handleGenerateStory(
   prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
-  let history: Message[];
-  try {
-    const historyString = formData.get("history") as string;
-    history = JSON.parse(historyString);
-  } catch (e) {
-    return { message: "Invalid chat history provided.", error: true };
-  }
-
-  const validatedFields = continueStorySchema.safeParse({
-    history,
+  const validatedFields = generateStorySchema.safeParse({
     prompt: formData.get("prompt"),
   });
 
@@ -43,22 +29,14 @@ export async function handleContinueStory(
     };
   }
   
-  const { history: validatedHistory, prompt } = validatedFields.data;
-
-  // Filter out the initial system message if it exists
-  const conversationHistory = validatedHistory.filter(
-    (msg, index) => !(index === 0 && msg.role === 'model' && msg.content.startsWith('You are an expert'))
-  );
+  const { prompt } = validatedFields.data;
 
   try {
-    const result = await continueEroticStory({
-      history: conversationHistory,
-      prompt,
-    });
-    return { message: "Story continued successfully.", data: result };
+    const result = await generateFullEroticStory({ prompt });
+    return { message: "Story generated successfully.", data: { story: result.story } };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-    return { message: `Failed to continue story: ${errorMessage}`, error: true };
+    return { message: `Failed to generate story: ${errorMessage}`, error: true };
   }
 }
 

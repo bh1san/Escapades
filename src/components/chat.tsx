@@ -1,11 +1,11 @@
 "use client";
 
-import { handleContinueStory, handleGeneratePrompt } from "@/app/actions";
+import { handleGenerateStory, handleGeneratePrompt } from "@/app/actions";
 import { useEffect, useRef, useState, useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Loader2, Send, Sparkles, User, BotMessageSquare, Pilcrow, PanelLeft, Wand } from "lucide-react";
+import { Loader2, Send, Sparkles, User, PanelLeft, Wand } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -16,29 +16,25 @@ import ReactMarkdown from 'react-markdown';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 
-const initialMessages: Message[] = [
-  {
-    role: "model",
-    content:
-      "You are an expert in writing erotic fiction. Tell me a story you would like to hear, and I will write it for you. You can guide the story at every step.",
-  },
-];
+const initialMessage: Message = {
+  role: "model",
+  content:
+    "You are an expert in writing erotic fiction. Tell me a story you would like to hear, and I will write it for you.",
+};
 
 export function Chat() {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [messages, setMessages] = useState<Message[]>([initialMessage]);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
   const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
 
 
-  const [state, formAction, isPending] = useActionState(handleContinueStory, {
+  const [state, formAction, isPending] = useActionState(handleGenerateStory, {
     message: "",
     error: false,
   });
 
-  // Effect to handle the result of the server action
   useEffect(() => {
     if (state.message && !isPending) {
       if (state.error) {
@@ -47,22 +43,18 @@ export function Chat() {
           title: "Error",
           description: state.message,
         });
-        // On error, remove the user's optimistic message
         setMessages((currentMessages) =>
           currentMessages.filter((msg, index) => index !== currentMessages.length - 1 || msg.role !== 'user')
         );
-        setSuggestions([]);
-      } else if (state.data) {
+      } else if (state.data?.story) {
         setMessages((prevMessages) => [
           ...prevMessages,
-          { role: "model", content: state.data.newChapter },
+          { role: "model", content: state.data.story },
         ]);
-        setSuggestions(state.data.suggestions || []);
       }
     }
   }, [state, isPending, toast]);
 
-  // Effect to scroll to the bottom when new messages are added
   useEffect(() => {
     if (scrollViewportRef.current) {
       scrollViewportRef.current.scrollTo({
@@ -70,8 +62,8 @@ export function Chat() {
         behavior: "smooth",
       });
     }
-  }, [messages, suggestions]);
-
+  }, [messages, isPending]);
+  
   const submitForm = () => {
     if (formRef.current) {
         const formData = new FormData(formRef.current);
@@ -81,12 +73,7 @@ export function Chat() {
             return;
         }
 
-        setMessages((prevMessages) => [
-            ...prevMessages,
-            { role: "user", content: prompt },
-        ]);
-        setSuggestions([]);
-
+        setMessages([initialMessage, { role: "user", content: prompt }]);
         formAction(formData);
         formRef.current.reset();
         formRef.current.querySelector('textarea')?.focus();
@@ -97,20 +84,6 @@ export function Chat() {
     e.preventDefault();
     submitForm();
   };
-  
-  const handleSuggestionClick = (suggestion: string) => {
-    if (formRef.current) {
-        const promptTextarea = formRef.current.querySelector('textarea[name="prompt"]') as HTMLTextAreaElement;
-        if (promptTextarea) {
-            promptTextarea.value = suggestion;
-            submitForm();
-        }
-    }
-  };
-
-  const handleContinueClick = () => {
-    handleSuggestionClick("Continue the story.");
-  };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey && !isPending) {
@@ -120,8 +93,7 @@ export function Chat() {
   };
 
   const startNewChat = () => {
-    setMessages(initialMessages);
-    setSuggestions([]);
+    setMessages([initialMessage]);
   };
 
   const generatePrompt = async () => {
@@ -142,8 +114,6 @@ export function Chat() {
     }
     setIsGeneratingPrompt(false);
   };
-
-  const isLastMessageFromModel = messages.length > 1 && messages[messages.length - 1].role === 'model';
 
   return (
     <>
@@ -214,26 +184,11 @@ export function Chat() {
                         </AvatarFallback>
                     </Avatar>
                     <div className="bg-muted rounded-lg p-3">
-                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                    </div>
-                  </div>
-                )}
-                {!isPending && (suggestions.length > 0 || isLastMessageFromModel) && (
-                  <div className="flex justify-start">
-                      <div className="flex flex-wrap items-start gap-2 ml-12">
-                        {suggestions.map((suggestion, index) => (
-                          <Button key={index} variant="outline" size="sm" onClick={() => handleSuggestionClick(suggestion)}>
-                            <BotMessageSquare className="mr-2 h-4 w-4" />
-                            {suggestion}
-                          </Button>
-                        ))}
-                        {isLastMessageFromModel && (
-                          <Button variant="secondary" size="sm" onClick={handleContinueClick}>
-                            <Pilcrow className="mr-2 h-4 w-4" />
-                            Continue Story
-                          </Button>
-                        )}
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span>Generating your story...</span>
                       </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -243,11 +198,6 @@ export function Chat() {
         <div className="container mx-auto max-w-4xl pb-4 px-4 mt-auto shrink-0">
            <Card className="mt-4 p-2 rounded-2xl shadow-lg">
              <form ref={formRef} onSubmit={handleSubmit} className="flex items-center gap-2">
-               <input
-                 type="hidden"
-                 name="history"
-                 value={JSON.stringify(messages)}
-               />
                <Button
                   type="button"
                   variant="ghost"
