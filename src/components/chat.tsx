@@ -2,7 +2,8 @@
 "use client";
 
 import { handleGenerateStory, handleGeneratePrompt } from "@/app/actions";
-import { useEffect, useRef, useState, useActionState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";

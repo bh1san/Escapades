@@ -1,3 +1,4 @@
+
 "use server";
 
 import { z } from "zod";
@@ -32,11 +33,10 @@ export async function handleGenerateStory(
   const { prompt } = validatedFields.data;
 
   try {
-    const result = await generateFullEroticStory({ prompt });
+    const result = await generateFullEroticStory(prompt);
     if (typeof result === 'string' && result.length > 0) {
       return { message: "Story generated successfully.", data: { story: result } };
     }
-    // This case handles if the AI returns an empty string or something unexpected.
     return { message: "Failed to generate story: The model returned an empty response.", error: true };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";

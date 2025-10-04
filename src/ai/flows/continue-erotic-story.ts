@@ -1,23 +1,17 @@
+
 'use server';
 
 /**
  * @fileOverview Generates a complete, long-form erotic story based on a user prompt.
  *
  * - generateFullEroticStory - A function that handles the story generation.
- * - GenerateFullEroticStoryInput - The input type for the function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const GenerateFullEroticStoryInputSchema = z.object({
-  prompt: z.string().describe("The user's prompt to generate the story from."),
-});
-export type GenerateFullEroticStoryInput = z.infer<typeof GenerateFullEroticStoryInputSchema>;
-
-export async function generateFullEroticStory(input: GenerateFullEroticStoryInput): Promise<string> {
-  // We pass the prompt string directly to the flow.
-  return generateFullEroticStoryFlow(input.prompt);
+export async function generateFullEroticStory(prompt: string): Promise<string> {
+  return generateFullEroticStoryFlow(prompt);
 }
 
 const storyPrompt = ai.definePrompt({
