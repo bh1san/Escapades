@@ -11,7 +11,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateFullEroticStoryInputSchema = z.object({
-  prompt: z.string().describe('The user\'s prompt to generate the story from.'),
+  prompt: z.string().describe("The user's prompt to generate the story from."),
 });
 export type GenerateFullEroticStoryInput = z.infer<typeof GenerateFullEroticStoryInputSchema>;
 
@@ -57,8 +57,8 @@ const generateFullEroticStoryFlow = ai.defineFlow(
     inputSchema: z.string(),
     outputSchema: z.string(),
   },
-  async (userPrompt) => {
-    const llmResponse = await storyPrompt(userPrompt);
+  async (promptText) => {
+    const llmResponse = await storyPrompt(promptText);
     const story = llmResponse.text;
 
     if (!story) {
