@@ -32,6 +32,7 @@ export async function handleGenerateStory(
   const { prompt } = validatedFields.data;
 
   try {
+    // Pass the correct object structure to the wrapper function
     const result = await generateFullEroticStory({ prompt });
     return { message: "Story generated successfully.", data: { story: result } };
   } catch (error) {
@@ -46,7 +47,10 @@ type GeneratePromptState = {
   error?: boolean;
 };
 
-export async function handleGeneratePrompt(): Promise<GeneratePromptState> {
+export async function handleGeneratePrompt(
+  prevState: GeneratePromptState,
+  formData: FormData
+): Promise<GeneratePromptState> {
   try {
     const result = await generateStoryPrompt();
     return { message: "Prompt generated successfully.", prompt: result.prompt };

@@ -16,11 +16,13 @@ const GenerateFullEroticStoryInputSchema = z.object({
 export type GenerateFullEroticStoryInput = z.infer<typeof GenerateFullEroticStoryInputSchema>;
 
 export async function generateFullEroticStory(input: GenerateFullEroticStoryInput): Promise<string> {
+  // We pass the prompt string directly to the flow.
   return generateFullEroticStoryFlow(input.prompt);
 }
 
 const storyPrompt = ai.definePrompt({
   name: 'generateFullEroticStoryPrompt',
+  // The prompt now expects a string as input, not an object.
   input: {schema: z.string() },
   system: `You are an AI assistant designed to write a long, detailed, multi-chapter romantic and sensual story in a single response. The story must be as long as possible, with extensive conversations and vivid details.
 
@@ -53,6 +55,7 @@ const storyPrompt = ai.definePrompt({
 const generateFullEroticStoryFlow = ai.defineFlow(
   {
     name: 'generateFullEroticStoryFlow',
+    // The flow now correctly defines its input as a string.
     inputSchema: z.string(),
     outputSchema: z.string(),
   },
