@@ -33,7 +33,7 @@ export async function handleGenerateStory(
 
   try {
     const result = await generateFullEroticStory({ prompt });
-    return { message: "Story generated successfully.", data: { story: result.story } };
+    return { message: "Story generated successfully.", data: { story: result } };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
     return { message: `Failed to generate story: ${errorMessage}`, error: true };

@@ -5,7 +5,6 @@
  *
  * - generateFullEroticStory - A function that handles the story generation.
  * - GenerateFullEroticStoryInput - The input type for the function.
- * - GenerateFullEroticStoryOutput - The return type for the function.
  */
 
 import {ai} from '@/ai/genkit';
@@ -16,20 +15,13 @@ const GenerateFullEroticStoryInputSchema = z.object({
 });
 export type GenerateFullEroticStoryInput = z.infer<typeof GenerateFullEroticStoryInputSchema>;
 
-const GenerateFullEroticStoryOutputSchema = z.object({
-  story: z.string().describe('The complete, multi-chapter story.'),
-});
-export type GenerateFullEroticStoryOutput = z.infer<typeof GenerateFullEroticStoryOutputSchema>;
-
-
-export async function generateFullEroticStory(input: GenerateFullEroticStoryInput): Promise<GenerateFullEroticStoryOutput> {
+export async function generateFullEroticStory(input: GenerateFullEroticStoryInput): Promise<string> {
   return generateFullEroticStoryFlow(input.prompt);
 }
 
 const storyPrompt = ai.definePrompt({
   name: 'generateFullEroticStoryPrompt',
   input: {schema: z.string() },
-  output: {schema: GenerateFullEroticStoryOutputSchema},
   system: `You are an AI assistant designed to write a long, detailed, multi-chapter romantic and sensual story in a single response. The story must be as long as possible, with extensive conversations and vivid details.
 
   Core Themes: Forbidden romance, escalating tension, power dynamics, secret desires, and detailed sexual encounters.
@@ -62,16 +54,17 @@ const generateFullEroticStoryFlow = ai.defineFlow(
   {
     name: 'generateFullEroticStoryFlow',
     inputSchema: z.string(),
-    outputSchema: GenerateFullEroticStoryOutputSchema,
+    outputSchema: z.string(),
   },
   async (userPrompt) => {
 
-    const {output} = await storyPrompt(userPrompt);
+    const llmResponse = await storyPrompt(userPrompt);
+    const story = llmResponse.text;
 
-    if (!output) {
+    if (!story) {
       throw new Error("The model did not return a response.");
     }
 
-    return { story: output.story };
+    return story;
   }
 );
