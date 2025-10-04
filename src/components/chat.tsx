@@ -51,6 +51,7 @@ export function Chat() {
           ...prevMessages,
           { role: "model", content: state.data.story },
         ]);
+        formRef.current?.reset();
       }
     }
   }, [state, isPending, toast]);
@@ -63,32 +64,20 @@ export function Chat() {
       });
     }
   }, [messages, isPending]);
-  
-  const submitForm = () => {
-    if (formRef.current) {
-        const formData = new FormData(formRef.current);
-        const prompt = formData.get('prompt') as string;
 
-        if (!prompt.trim() || isPending) {
-            return;
-        }
-
-        setMessages([{ role: "user", content: prompt }]);
-        formAction(formData);
-        formRef.current.reset();
-        formRef.current.querySelector('textarea')?.focus();
+  const handleFormSubmit = (formData: FormData) => {
+    const prompt = formData.get('prompt') as string;
+    if (!prompt.trim() || isPending) {
+        return;
     }
-  };
+    setMessages((prev) => [...prev, { role: "user", content: prompt }]);
+    formAction(formData);
+  }
   
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    submitForm();
-  };
-
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey && !isPending) {
       event.preventDefault();
-      submitForm();
+      formRef.current?.requestSubmit();
     }
   };
 
@@ -197,7 +186,7 @@ export function Chat() {
         </div>
         <div className="container mx-auto max-w-4xl pb-4 px-4 mt-auto shrink-0">
            <Card className="mt-4 p-2 rounded-2xl shadow-lg">
-             <form ref={formRef} onSubmit={handleSubmit} className="flex items-center gap-2">
+             <form ref={formRef} action={handleFormSubmit} className="flex items-center gap-2">
                <Button
                   type="button"
                   variant="ghost"
