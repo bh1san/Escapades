@@ -32,7 +32,6 @@ export async function handleGenerateStory(
   const { prompt } = validatedFields.data;
 
   try {
-    // Pass the correct object structure to the wrapper function
     const result = await generateFullEroticStory({ prompt });
     return { message: "Story generated successfully.", data: { story: result } };
   } catch (error) {
