@@ -52,6 +52,6 @@ export async function handleGeneratePrompt(): Promise<GeneratePromptState> {
     return { message: "Prompt generated successfully.", prompt: result.prompt };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-    return { message: `Failed to generate prompt: ${errorMessage}`, error: true };
+    return { message: `Failed to generate prompt. ${errorMessage}`, error: true };
   }
 }
