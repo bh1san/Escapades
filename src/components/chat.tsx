@@ -31,11 +31,13 @@ export function Chat() {
 
   const [storyState, storyFormAction, isStoryPending] = useActionState(handleGenerateStory, {
     message: "",
+    data: { story: ""},
     error: false,
   });
 
   const [promptState, promptFormAction, isPromptPending] = useActionState(handleGeneratePrompt, {
     message: "",
+    prompt: "",
     error: false,
   });
 
@@ -50,12 +52,11 @@ export function Chat() {
         setMessages((currentMessages) =>
           currentMessages.filter((msg, index) => index !== currentMessages.length - 1 || msg.role !== 'user')
         );
-      } else if (storyState.data?.story) {
+      } else if (storyState.data?.story && typeof storyState.data.story === 'string') {
         setMessages((prevMessages) => [
           ...prevMessages,
           { role: "model", content: storyState.data.story },
         ]);
-        formRef.current?.reset();
       }
     }
   }, [storyState, isStoryPending, toast]);
@@ -94,6 +95,7 @@ export function Chat() {
     }
     setMessages((prev) => [...prev, { role: "user", content: prompt }]);
     storyFormAction(formData);
+    formRef.current?.reset();
   }
   
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {

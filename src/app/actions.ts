@@ -33,7 +33,11 @@ export async function handleGenerateStory(
 
   try {
     const result = await generateFullEroticStory({ prompt });
-    return { message: "Story generated successfully.", data: { story: result } };
+    if (typeof result === 'string' && result.length > 0) {
+      return { message: "Story generated successfully.", data: { story: result } };
+    }
+    // This case handles if the AI returns an empty string or something unexpected.
+    return { message: "Failed to generate story: The model returned an empty response.", error: true };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
     return { message: `Failed to generate story: ${errorMessage}`, error: true };
@@ -52,7 +56,10 @@ export async function handleGeneratePrompt(
 ): Promise<GeneratePromptState> {
   try {
     const result = await generateStoryPrompt();
-    return { message: "Prompt generated successfully.", prompt: result.prompt };
+    if (result?.prompt) {
+      return { message: "Prompt generated successfully.", prompt: result.prompt };
+    }
+    return { message: "Failed to generate prompt: The model returned an empty response.", error: true };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
     return { message: `Failed to generate prompt: ${errorMessage}`, error: true };
