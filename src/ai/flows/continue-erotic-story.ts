@@ -65,9 +65,9 @@ const generateFullEroticStoryFlow = ai.defineFlow(
     inputSchema: z.string(),
     outputSchema: GenerateFullEroticStoryOutputSchema,
   },
-  async (prompt) => {
+  async (userPrompt) => {
 
-    const {output} = await prompt(prompt);
+    const {output} = await prompt(userPrompt);
 
     if (!output) {
       throw new Error("The model did not return a response.");
