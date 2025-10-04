@@ -23,12 +23,12 @@ export type GenerateFullEroticStoryOutput = z.infer<typeof GenerateFullEroticSto
 
 
 export async function generateFullEroticStory(input: GenerateFullEroticStoryInput): Promise<GenerateFullEroticStoryOutput> {
-  return generateFullEroticStoryFlow(input);
+  return generateFullEroticStoryFlow(input.prompt);
 }
 
 const prompt = ai.definePrompt({
   name: 'generateFullEroticStoryPrompt',
-  input: {schema: GenerateFullEroticStoryInputSchema},
+  input: {schema: z.string() },
   output: {schema: GenerateFullEroticStoryOutputSchema},
   system: `You are an AI assistant designed to write a long, detailed, multi-chapter romantic and sensual story in a single response. The story must be as long as possible, with extensive conversations and vivid details.
 
@@ -62,12 +62,12 @@ const prompt = ai.definePrompt({
 const generateFullEroticStoryFlow = ai.defineFlow(
   {
     name: 'generateFullEroticStoryFlow',
-    inputSchema: GenerateFullEroticStoryInputSchema,
+    inputSchema: z.string(),
     outputSchema: GenerateFullEroticStoryOutputSchema,
   },
-  async ({ prompt }) => {
+  async (prompt) => {
 
-    const {output} = await prompt({ prompt });
+    const {output} = await prompt(prompt);
 
     if (!output) {
       throw new Error("The model did not return a response.");
