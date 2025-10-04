@@ -1,7 +1,7 @@
 
 "use client";
 
-import { handleGenerateStory, handleGeneratePrompt } from "@/app/actions";
+import { handleChat } from "@/app/actions";
 import { useEffect, useRef, useState } from "react";
 import { useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -17,44 +17,52 @@ import { HistorySidebar } from "@/components/history-sidebar";
 import ReactMarkdown from 'react-markdown';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
-
-const initialMessage: Message = {
-  role: "model",
-  content:
-    "You are an expert in writing erotic fiction. Tell me a story you would like to hear, and I will write it for you.",
+type ChatState = {
+  messages: Message[];
+  error?: string | null;
+  pendingUserInput?: string | null;
 };
 
-export function Chat() {
-  const [messages, setMessages] = useState<Message[]>([initialMessage]);
-  const [isStoryPending, setIsStoryPending] = useState(false);
+interface ChatProps {
+  initialState: ChatState;
+}
+
+export function Chat({ initialState }: ChatProps) {
+  const [state, formAction, isPending] = useActionState(handleChat, initialState);
+  const [input, setInput] = useState("");
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
 
-  const [promptState, promptFormAction, isPromptPending] = useActionState(handleGeneratePrompt, {
-    message: "",
-    prompt: "",
-    error: false,
-  });
+  useEffect(() => {
+    if (state.error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: state.error,
+      });
+    }
+  }, [state.error, toast]);
 
   useEffect(() => {
-    if (promptState.message && !isPromptPending) {
-        if (promptState.error) {
-            toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: promptState.message,
-            });
-        } else if (promptState.prompt && formRef.current) {
-            const promptTextarea = formRef.current.querySelector('textarea[name="prompt"]') as HTMLTextAreaElement;
-            if (promptTextarea) {
-                promptTextarea.value = promptState.prompt;
-                promptTextarea.focus();
-            }
-        }
+    if(state.pendingUserInput) {
+        setInput(state.pendingUserInput);
+        // Focus the textarea
+        formRef.current?.querySelector('textarea')?.focus();
     }
-  }, [promptState, isPromptPending, toast]);
+  }, [state.pendingUserInput]);
 
+  useEffect(() => {
+    if (!isPending) {
+        // Only clear input if the last action was 'generate_story'
+        const lastAction = (formRef.current?.lastChild as HTMLButtonElement)?.value;
+        if (lastAction !== 'generate_prompt') {
+            setInput("");
+        }
+        formRef.current?.reset();
+    }
+  }, [isPending]);
+  
   useEffect(() => {
     if (scrollViewportRef.current) {
       scrollViewportRef.current.scrollTo({
@@ -62,51 +70,23 @@ export function Chat() {
         behavior: "smooth",
       });
     }
-  }, [messages, isStoryPending]);
+  }, [state.messages, isPending]);
 
-  const handleFormSubmit = async (formData: FormData) => {
-    const prompt = formData.get('prompt') as string;
-    if (!prompt.trim() || isStoryPending) {
-        return;
-    }
-    
-    formRef.current?.reset();
-    setMessages((prev) => [...prev, { role: "user", content: prompt }]);
-    setIsStoryPending(true);
-
-    try {
-        const story = await handleGenerateStory(prompt);
-        setMessages((prev) => [...prev, { role: "model", content: story }]);
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-        toast({
-            variant: "destructive",
-            title: "Error",
-            description: errorMessage,
-        });
-        // Remove the user message that led to the error
-        setMessages(currentMessages => currentMessages.slice(0, -1));
-    } finally {
-        setIsStoryPending(false);
-    }
-  }
-  
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey && !isStoryPending) {
+    if (event.key === 'Enter' && !event.shiftKey && !isPending && input.trim()) {
       event.preventDefault();
-      formRef.current?.requestSubmit();
+      // Directly submit the form via the submit button
+      formRef.current?.querySelector('button[value="generate_story"]')?.click();
     }
   };
 
   const startNewChat = () => {
-    setMessages([initialMessage]);
+    window.location.reload();
   };
-
-  const isPending = isStoryPending || isPromptPending;
 
   return (
     <>
-      <HistorySidebar history={messages} onNewChat={startNewChat} />
+      <HistorySidebar history={state.messages} onNewChat={startNewChat} />
       <div className="relative flex h-full max-h-dvh w-full flex-col">
          <header className="flex items-center justify-between p-4 border-b shrink-0 md:hidden">
             <Sheet>
@@ -117,7 +97,7 @@ export function Chat() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0">
-                    <HistorySidebar history={messages} onNewChat={startNewChat} isMobile={true}/>
+                    <HistorySidebar history={state.messages} onNewChat={startNewChat} isMobile={true}/>
                 </SheetContent>
             </Sheet>
             <h1 className="text-xl font-bold">Story Weaver</h1>
@@ -129,7 +109,7 @@ export function Chat() {
           <ScrollArea className="h-full" viewportRef={scrollViewportRef}>
             <div className="container mx-auto max-w-4xl py-8 px-4">
               <div className="space-y-8">
-                {messages.map((message, index) => (
+                {state.messages.map((message, index) => (
                   <div
                     key={index}
                     className={cn(
@@ -165,7 +145,7 @@ export function Chat() {
                     )}
                   </div>
                 ))}
-                {isStoryPending && (
+                {isPending && (
                   <div className="flex items-start gap-4">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback>
@@ -186,25 +166,22 @@ export function Chat() {
         </div>
         <div className="container mx-auto max-w-4xl pb-4 px-4 mt-auto shrink-0">
            <Card className="mt-4 p-2 rounded-2xl shadow-lg">
-             <div className="flex items-center gap-2">
-               <form action={promptFormAction}>
+             <form ref={formRef} action={formAction} className="flex items-center gap-2 w-full">
                 <Button
                     type="submit"
+                    name="action"
+                    value="generate_prompt"
                     variant="ghost"
                     size="icon"
                     disabled={isPending}
                     className="text-muted-foreground hover:text-primary"
                   >
-                    {isPromptPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Wand className="h-4 w-4" />
-                    )}
+                    <Wand className="h-4 w-4" />
                     <span className="sr-only">Generate story idea</span>
-                  </Button>
-               </form>
-               <form ref={formRef} action={handleFormSubmit} className="flex items-center gap-2 w-full">
+                </Button>
                 <Textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
                   suppressHydrationWarning
                   name="prompt"
                   placeholder="Tell me what happens next..."
@@ -215,19 +192,16 @@ export function Chat() {
                 />
                 <Button
                     type="submit"
+                    name="action"
+                    value="generate_story"
                     size="icon"
-                    disabled={isPending}
+                    disabled={isPending || !input.trim()}
                     className="bg-primary/10 text-primary hover:bg-primary/20 rounded-full"
                   >
-                    {isStoryPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4" />
-                    )}
+                    <Send className="h-4 w-4" />
                     <span className="sr-only">Send message</span>
                   </Button>
-               </form>
-             </div>
+             </form>
            </Card>
         </div>
       </div>
