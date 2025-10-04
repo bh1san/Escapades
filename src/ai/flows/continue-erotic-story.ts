@@ -26,7 +26,7 @@ export async function generateFullEroticStory(input: GenerateFullEroticStoryInpu
   return generateFullEroticStoryFlow(input.prompt);
 }
 
-const prompt = ai.definePrompt({
+const storyPrompt = ai.definePrompt({
   name: 'generateFullEroticStoryPrompt',
   input: {schema: z.string() },
   output: {schema: GenerateFullEroticStoryOutputSchema},
@@ -56,7 +56,6 @@ const prompt = ai.definePrompt({
   - **The intimate scenes must be described with passion and sensuality, focusing on romantic and psychological elements. Be explicit and detailed in the description of sexual acts.** Do not include anal sex.
   - Write a complete and detailed story. Do not stop in the middle.
   `,
-  prompt: `{{{prompt}}}`,
 });
 
 const generateFullEroticStoryFlow = ai.defineFlow(
@@ -67,7 +66,7 @@ const generateFullEroticStoryFlow = ai.defineFlow(
   },
   async (userPrompt) => {
 
-    const {output} = await prompt(userPrompt);
+    const {output} = await storyPrompt(userPrompt);
 
     if (!output) {
       throw new Error("The model did not return a response.");
