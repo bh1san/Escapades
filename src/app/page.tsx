@@ -1,4 +1,4 @@
-import { getInitialChatState } from "@/app/actions";
+import { getInitialChatState } from "@/app/data";
 import { Chat } from "@/components/chat";
 
 export default async function Home() {
