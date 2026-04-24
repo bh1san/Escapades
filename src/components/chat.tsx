@@ -30,9 +30,31 @@ interface ChatProps {
 export function Chat({ initialState }: ChatProps) {
   const [state, formAction, isPending] = useActionState(handleChat, initialState);
   const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<Message[]>(initialState.messages);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('escapades_chat_history');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+        }
+      } catch (e) {
+        console.error('Failed to load chat history', e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (state.messages.length > initialState.messages.length) {
+      setMessages(state.messages);
+      localStorage.setItem('escapades_chat_history', JSON.stringify(state.messages));
+    }
+  }, [state.messages, initialState.messages.length]);
 
   useEffect(() => {
     if (state.error) {
@@ -70,7 +92,7 @@ export function Chat({ initialState }: ChatProps) {
         behavior: "smooth",
       });
     }
-  }, [state.messages, isPending]);
+  }, [messages, isPending]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey && !isPending && input.trim()) {
@@ -81,12 +103,13 @@ export function Chat({ initialState }: ChatProps) {
   };
 
   const startNewChat = () => {
+    localStorage.removeItem('escapades_chat_history');
     window.location.reload();
   };
 
   return (
     <>
-      <HistorySidebar history={state.messages} onNewChat={startNewChat} />
+      <HistorySidebar history={messages} onNewChat={startNewChat} />
       <div className="relative flex h-full max-h-dvh w-full flex-col">
          <header className="flex items-center justify-between p-4 border-b shrink-0 md:hidden">
             <Sheet>
@@ -97,7 +120,7 @@ export function Chat({ initialState }: ChatProps) {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0">
-                    <HistorySidebar history={state.messages} onNewChat={startNewChat} isMobile={true}/>
+                    <HistorySidebar history={messages} onNewChat={startNewChat} isMobile={true}/>
                 </SheetContent>
             </Sheet>
             <h1 className="text-xl font-bold">Story Weaver</h1>
@@ -109,7 +132,7 @@ export function Chat({ initialState }: ChatProps) {
           <ScrollArea className="h-full" viewportRef={scrollViewportRef}>
             <div className="container mx-auto max-w-4xl py-8 px-4">
               <div className="space-y-8">
-                {state.messages.map((message, index) => (
+                {messages.map((message, index) => (
                   <div
                     key={index}
                     className={cn(
@@ -167,6 +190,7 @@ export function Chat({ initialState }: ChatProps) {
         <div className="container mx-auto max-w-4xl pb-4 px-4 mt-auto shrink-0">
            <Card className="mt-4 p-2 rounded-2xl shadow-lg">
              <form ref={formRef} action={formAction} className="flex items-center gap-2 w-full">
+                <input type="hidden" name="history" value={JSON.stringify(messages)} />
                 <Button
                     type="submit"
                     name="action"

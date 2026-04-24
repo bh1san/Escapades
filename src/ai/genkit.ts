@@ -1,28 +1,12 @@
 import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/googleai';
+import openAI from 'genkitx-openai';
 
 export const ai = genkit({
   plugins: [
-    googleAI({
-      safetySettings: [
-        {
-          category: 'HARM_CATEGORY_HATE_SPEECH',
-          threshold: 'BLOCK_NONE',
-        },
-        {
-          category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-          threshold: 'BLOCK_NONE',
-        },
-        {
-          category: 'HARM_CATEGORY_HARASSMENT',
-          threshold: 'BLOCK_NONE',
-        },
-        {
-          category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-          threshold: 'BLOCK_NONE',
-        },
-      ],
+    openAI({
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKey: process.env.OPENROUTER_API_KEY,
     }),
   ],
-  model: 'googleai/gemini-2.5-flash',
+  model: 'openai/cognitivecomputations/dolphin-mixtral-8x7b',
 });

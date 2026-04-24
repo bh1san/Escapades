@@ -42,6 +42,8 @@ export async function handleChat(
 
   const promptSchema = z.string().min(1, "Prompt cannot be empty.");
   const prompt = formData.get("prompt") as string;
+  const historyStr = formData.get("history") as string;
+  
   const validatedFields = promptSchema.safeParse(prompt);
 
   if (!validatedFields.success) {
@@ -51,8 +53,17 @@ export async function handleChat(
     };
   }
 
+  let historyMessages = prevState.messages;
+  if (historyStr) {
+      try {
+          historyMessages = JSON.parse(historyStr);
+      } catch (e) {
+          console.error("Failed to parse chat history:", e);
+      }
+  }
+
   const newMessages: Message[] = [
-    ...prevState.messages,
+    ...historyMessages,
     { role: "user", content: validatedFields.data },
   ];
 
