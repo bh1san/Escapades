@@ -15,21 +15,18 @@ import type { Message } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { HistorySidebar } from "@/components/history-sidebar";
 import ReactMarkdown from 'react-markdown';
-import { saveChat, getChat } from "@/lib/db";
-import { Copy, Link2 } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 type ChatState = {
   messages: Message[];
   error?: string | null;
   pendingUserInput?: string | null;
-  chatId?: string;
 };
 
 interface ChatProps {
   initialState: ChatState;
 }
 
-// Suggestion chips shown after an AI response
 const SUGGESTION_GROUPS: Record<string, string[]> = {
   default: [
     "Make it more intense 🔥",
@@ -74,64 +71,27 @@ export function Chat({ initialState }: ChatProps) {
     }
   };
 
-  const [chatId, setChatId] = useState<string | null>(null);
-
-  // Initialize Chat ID and Load History
   useEffect(() => {
-    const initChat = async () => {
-      // 1. Check URL for Chat ID (for cross-device sync)
-      const urlParams = new URLSearchParams(window.location.search);
-      let id = urlParams.get('id');
-
-      // 2. Check LocalStorage if not in URL
-      if (!id) {
-        id = localStorage.getItem('escapades_chat_id');
-      }
-
-      // 3. Generate new ID if none exists
-      if (!id) {
-        id = crypto.randomUUID();
-        localStorage.setItem('escapades_chat_id', id);
-      }
-
-      setChatId(id);
-
-      // 4. Fetch from Firestore if ID exists
-      const cloudMessages = await getChat(id);
-      if (cloudMessages && cloudMessages.length > 0) {
-        setMessages(cloudMessages);
-      } else {
-        // Fallback to local if cloud is empty
-        const savedLocal = localStorage.getItem('escapades_chat_history');
-        if (savedLocal) {
-          try {
-            const parsed = JSON.parse(savedLocal);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              setMessages(parsed);
-            }
-          } catch (e) {
-            console.error('Failed to load local history', e);
-          }
+    const saved = localStorage.getItem('escapades_chat_history');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
         }
+      } catch (e) {
+        console.error('Failed to load chat history', e);
       }
-    };
-
-    initChat();
+    }
   }, []);
 
-  // Sync with Firestore and LocalStorage
   useEffect(() => {
     if (state.messages.length > initialState.messages.length) {
       setMessages(state.messages);
       localStorage.setItem('escapades_chat_history', JSON.stringify(state.messages));
-      
-      if (chatId) {
-        saveChat(chatId, state.messages);
-      }
-      
       setShowSuggestions(true);
     }
-  }, [state.messages, initialState.messages.length, chatId]);
+  }, [state.messages, initialState.messages.length]);
 
   useEffect(() => {
     if (state.error) {
@@ -179,21 +139,8 @@ export function Chat({ initialState }: ChatProps) {
   };
 
   const startNewChat = () => {
-    const newId = crypto.randomUUID();
-    localStorage.setItem('escapades_chat_id', newId);
     localStorage.removeItem('escapades_chat_history');
-    window.location.href = '/'; // Clear URL params
-  };
-
-  const copySyncLink = () => {
-    if (chatId) {
-      const url = `${window.location.origin}/?id=${chatId}`;
-      navigator.clipboard.writeText(url);
-      toast({
-        title: "Link Copied!",
-        description: "Open this link on any device to see this story.",
-      });
-    }
+    window.location.reload();
   };
 
   const handleSuggestionClick = useCallback((suggestion: string) => {
@@ -230,20 +177,12 @@ export function Chat({ initialState }: ChatProps) {
            <div className="w-9" />
         </header>
 
+        {/* Desktop Header */}
         <header className="hidden md:flex items-center justify-between px-6 py-4 border-b shrink-0 backdrop-blur-sm bg-background/80 sticky top-0 z-10">
           <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
             Story Weaver
           </h1>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="gap-2 text-xs rounded-full border-primary/20 hover:bg-primary/5 hover:text-primary transition-all duration-300"
-            onClick={copySyncLink}
-          >
-            <Link2 className="h-3.5 w-3.5" />
-            Sync to all devices
-          </Button>
         </header>
 
         {/* Messages */}
