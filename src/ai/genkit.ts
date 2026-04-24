@@ -10,7 +10,7 @@ export const ai = genkit({
         {
           name: 'qwen/qwen-2-vl-72b-instruct',
           info: {
-            label: 'Qwen 2 VL 72B',
+            label: 'Qwen 2 VL 72B (Vision)',
             supports: {
               multiturn: true,
               systemRole: true,
@@ -19,8 +19,20 @@ export const ai = genkit({
           },
           configSchema: z.any(),
         },
+        {
+          name: 'cognitivecomputations/dolphin-mixtral-8x7b',
+          info: {
+            label: 'Dolphin Mixtral (Uncensored)',
+            supports: {
+              multiturn: true,
+              systemRole: true,
+            },
+          },
+          configSchema: z.any(),
+        },
       ],
     }),
   ],
-  model: 'openai/qwen/qwen-2-vl-72b-instruct',
+  // Default to the uncensored model for text generation
+  model: 'openai/cognitivecomputations/dolphin-mixtral-8x7b',
 });

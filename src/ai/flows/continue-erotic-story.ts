@@ -1,12 +1,6 @@
 
 'use server';
 
-/**
- * @fileOverview Generates a complete, long-form erotic story based on a user prompt.
- *
- * - generateFullEroticStory - A function that handles the story generation.
- */
-
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
@@ -24,12 +18,27 @@ const generateFullEroticStoryFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async ({ prompt, image }) => {
-    let contentParts: any[] = [{ text: prompt }];
+    let visualDescription = "";
+
+    // STEP 1: If there's an image, use the Vision model to get a detailed description
     if (image) {
-      contentParts.push({ media: { url: image } });
+      const visionResponse = await ai.generate({
+        model: 'openai/qwen/qwen-2-vl-72b-instruct',
+        system: "You are a master of visual description. Describe the person in the image in vivid, sensory, and seductive detail. Focus on their body structure, figure, facial features, dress, and aura. Use elegant and descriptive language that captures their essence perfectly.",
+        messages: [
+          {
+            role: 'user',
+            content: [{ media: { url: image } }, { text: "Provide a detailed, sensory description of this person for use in a romantic narrative." }],
+          }
+        ],
+      });
+      visualDescription = visionResponse.text;
+      console.log("Vision Description generated:", visualDescription.substring(0, 100) + "...");
     }
 
+    // STEP 2: Use the Uncensored Model (Dolphin) to write the actual story
     const llmResponse = await ai.generate({
+      // Uses the default model (Dolphin Mixtral) set in genkit.ts
       system: `You are an AI assistant designed to write a long, detailed, multi-chapter romantic and sensual story in a single response. The story must be as long as possible, with extensive conversations and vivid details.
 
   Core Themes: Forbidden romance, escalating tension, power dynamics, secret desires, and detailed sexual encounters.
@@ -40,8 +49,8 @@ const generateFullEroticStoryFlow = ai.defineFlow(
   - The Husband: Kind but conventional, busy with his career, and somewhat oblivious to Nabina's inner world.
 
   Instructions:
-  - **IMAGE ANALYSIS**: If the user provides an image, you MUST analyze it deeply. Look at the person in the image—whether a boy or a girl. Describe their body structure, their figure, their dress, and their aura in intensely erotic, seductive, and vivid sensory detail. Seamlessly weave this visual description into the story, applying it to the relevant character (e.g., using the girl's appearance for Nabina).
-  - **Based on the user's prompt and any provided image, write a complete, multi-chapter story from beginning to end in a single response.**
+  - **VISUAL INTEGRATION**: ${visualDescription ? `Use this visual description for Nabina: "${visualDescription}"` : "Describe the characters' appearances in vivid, sensual detail."}
+  - **Based on the user's prompt, write a complete, multi-chapter story from beginning to end in a single response.**
   - **Crucially, when the user provides the first prompt to start the story, you must begin by introducing the characters and describing their appearance in vivid, sensual detail.**
   - **Format the story into well-structured paragraphs for readability. Use standard double line breaks between paragraphs.**
   - Include her inner thoughts, showing her moral struggle. Her inner monologue should be in italics by enclosing it in single asterisks (*like this*).
@@ -54,7 +63,7 @@ const generateFullEroticStoryFlow = ai.defineFlow(
       messages: [
         {
           role: 'user',
-          content: contentParts,
+          content: [{ text: prompt }],
         }
       ],
     });
