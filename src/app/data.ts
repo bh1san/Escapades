@@ -9,7 +9,7 @@ type ChatState = {
 const initialMessage: Message = {
   role: "model",
   content:
-    "You are an expert in writing erotic fiction. Tell me a story you would like to hear, and I will write it for you.",
+    "Welcome to **Story Weaver** ✨\n\nI'm your personal storyteller. Tell me a scenario, a fantasy, or a mood — and I'll craft a vivid, immersive story just for you.\n\n🔥 **Tip:** You can also upload an image of a person, and I'll weave their appearance into the narrative with seductive detail.\n\nWhat story shall we begin?",
 };
 
 export async function getInitialChatState(): Promise<ChatState> {
