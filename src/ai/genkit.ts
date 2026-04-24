@@ -8,17 +8,18 @@ export const ai = genkit({
       apiKey: process.env.OPENROUTER_API_KEY,
       models: [
         {
-          name: 'cognitivecomputations/dolphin-mixtral-8x7b',
+          name: 'qwen/qwen-2-vl-72b-instruct',
           info: {
-            label: 'Dolphin Mixtral',
+            label: 'Qwen 2 VL 72B',
             supports: {
               multiturn: true,
               systemRole: true,
+              media: true,
             },
           },
         },
       ],
     }),
   ],
-  model: 'openai/cognitivecomputations/dolphin-mixtral-8x7b',
+  model: 'openai/qwen/qwen-2-vl-72b-instruct',
 });

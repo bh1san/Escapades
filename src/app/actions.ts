@@ -40,16 +40,16 @@ export async function handleChat(
     }
   }
 
-  const promptSchema = z.string().min(1, "Prompt cannot be empty.");
   const prompt = formData.get("prompt") as string;
   const historyStr = formData.get("history") as string;
+  const imageStr = formData.get("image") as string;
   
-  const validatedFields = promptSchema.safeParse(prompt);
+  const finalPrompt = prompt.trim() ? prompt : (imageStr ? "Look at this image. Analyze it intensely. Mention the figure, body structure, dress, and aura in vivid, sensory, and seductive detail, and weave this seamlessly into our story." : "");
 
-  if (!validatedFields.success) {
+  if (!finalPrompt && !imageStr) {
     return {
       ...prevState,
-      error: validatedFields.error.errors.map((e) => e.message).join(", "),
+      error: "Prompt or image cannot be empty.",
     };
   }
 
@@ -64,11 +64,11 @@ export async function handleChat(
 
   const newMessages: Message[] = [
     ...historyMessages,
-    { role: "user", content: validatedFields.data },
+    { role: "user", content: finalPrompt, image: imageStr || undefined },
   ];
 
   try {
-    const story = await generateFullEroticStory(validatedFields.data);
+    const story = await generateFullEroticStory(finalPrompt, imageStr || undefined);
     if (typeof story === 'string' && story.length > 0) {
       return {
         messages: [...newMessages, { role: "model", content: story }],

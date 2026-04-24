@@ -7,7 +7,7 @@ import { useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Loader2, Send, Sparkles, User, PanelLeft, Wand } from "lucide-react";
+import { Loader2, Send, Sparkles, User, PanelLeft, Wand, ImageIcon, X } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -30,10 +30,23 @@ interface ChatProps {
 export function Chat({ initialState }: ChatProps) {
   const [state, formAction, isPending] = useActionState(handleChat, initialState);
   const [input, setInput] = useState("");
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>(initialState.messages);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   useEffect(() => {
     const saved = localStorage.getItem('escapades_chat_history');
@@ -80,6 +93,8 @@ export function Chat({ initialState }: ChatProps) {
         const lastAction = (formRef.current?.lastChild as HTMLButtonElement)?.value;
         if (lastAction !== 'generate_prompt') {
             setInput("");
+            setImagePreview(null);
+            if (fileInputRef.current) fileInputRef.current.value = "";
         }
         formRef.current?.reset();
     }
@@ -95,7 +110,7 @@ export function Chat({ initialState }: ChatProps) {
   }, [messages, isPending]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey && !isPending && input.trim()) {
+    if (event.key === 'Enter' && !event.shiftKey && !isPending && (input.trim() || imagePreview)) {
       event.preventDefault();
       // Directly submit the form via the submit button
       formRef.current?.querySelector('button[value="generate_story"]')?.click();
@@ -156,6 +171,11 @@ export function Chat({ initialState }: ChatProps) {
                       )}
                     >
                       <div className="prose prose-sm max-w-none text-foreground prose-p:before:content-none prose-p:after:content-none">
+                        {message.image && (
+                          <div className="mb-2">
+                            <img src={message.image} alt="Uploaded content" className="max-w-full h-auto rounded-md max-h-64 object-contain" />
+                          </div>
+                        )}
                         <ReactMarkdown>{message.content}</ReactMarkdown>
                       </div>
                     </div>
@@ -188,9 +208,45 @@ export function Chat({ initialState }: ChatProps) {
           </ScrollArea>
         </div>
         <div className="container mx-auto max-w-4xl pb-4 px-4 mt-auto shrink-0">
-           <Card className="mt-4 p-2 rounded-2xl shadow-lg">
+           <Card className="mt-4 p-2 rounded-2xl shadow-lg flex flex-col gap-2">
+             {imagePreview && (
+                <div className="relative inline-block w-24 h-24 rounded-lg border overflow-hidden">
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    <Button 
+                      type="button" 
+                      variant="destructive" 
+                      size="icon" 
+                      className="absolute top-1 right-1 h-6 w-6 rounded-full"
+                      onClick={() => {
+                        setImagePreview(null);
+                        if (fileInputRef.current) fileInputRef.current.value = "";
+                      }}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                </div>
+             )}
              <form ref={formRef} action={formAction} className="flex items-center gap-2 w-full">
                 <input type="hidden" name="history" value={JSON.stringify(messages)} />
+                <input type="hidden" name="image" value={imagePreview || ''} />
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  className="hidden" 
+                  ref={fileInputRef} 
+                  onChange={handleImageUpload} 
+                />
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled={isPending}
+                    className="text-muted-foreground hover:text-primary"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <ImageIcon className="h-4 w-4" />
+                    <span className="sr-only">Upload image</span>
+                </Button>
                 <Button
                     type="submit"
                     name="action"
@@ -219,7 +275,7 @@ export function Chat({ initialState }: ChatProps) {
                     name="action"
                     value="generate_story"
                     size="icon"
-                    disabled={isPending || !input.trim()}
+                    disabled={isPending || (!input.trim() && !imagePreview)}
                     className="bg-primary/10 text-primary hover:bg-primary/20 rounded-full"
                   >
                     <Send className="h-4 w-4" />
