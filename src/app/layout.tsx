@@ -12,6 +12,20 @@ const fontSans = FontSans({
 export const metadata: Metadata = {
   title: "Story Weaver",
   description: "Generate unique adult stories with customized plot elements.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "StoryWeaver",
+  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#000000",
 };
 
 export default function RootLayout({
