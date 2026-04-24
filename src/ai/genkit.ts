@@ -20,9 +20,9 @@ export const ai = genkit({
           configSchema: z.any(),
         },
         {
-          name: 'cognitivecomputations/dolphin-mixtral-8x7b',
+          name: 'cognitivecomputations/dolphin3.0-mistral-24b',
           info: {
-            label: 'Dolphin Mixtral (Uncensored)',
+            label: 'Dolphin 3.0 Mistral 24B (Uncensored)',
             supports: {
               multiturn: true,
               systemRole: true,
@@ -33,6 +33,6 @@ export const ai = genkit({
       ],
     }),
   ],
-  // Default to the uncensored model for text generation
-  model: 'openai/cognitivecomputations/dolphin-mixtral-8x7b',
+  // Default to the new uncensored model
+  model: 'openai/cognitivecomputations/dolphin3.0-mistral-24b',
 });
