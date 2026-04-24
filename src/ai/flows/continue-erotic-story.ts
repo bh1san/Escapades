@@ -21,18 +21,18 @@ const generateFullEroticStoryFlow = ai.defineFlow(
   async ({ prompt, history = [], image }) => {
     let visualDescription = "";
 
-    // STEP 1: Vision Analysis (only if an image is provided in the CURRENT message)
+    // STEP 1: Vision Analysis
     if (image) {
       try {
         const visionResponse = await ai.generate({
           model: 'openai/mistralai/pixtral-12b-2409',
-          system: "You are a master of visual description. Describe the person in the image in vivid, sensory, and seductive detail. Focus on their body structure, figure, facial features, dress, and aura. Use elegant and descriptive language. Focus ONLY on physical appearance.",
+          system: "Describe the person in the image in vivid, sensory, and seductive detail. Focus on their body structure, figure, facial features, dress, and aura. Focus ONLY on physical appearance.",
           messages: [
             {
               role: 'user',
               content: [
                 { media: { url: image } }, 
-                { text: "Provide a detailed, sensory description of this person for use in a romantic narrative." }
+                { text: "Provide a detailed physical description of this person." }
               ],
             }
           ],
@@ -44,42 +44,38 @@ const generateFullEroticStoryFlow = ai.defineFlow(
     }
 
     // Prepare the messages for the story model
-    // We convert the history to the format expected by Genkit
     const chatMessages: any[] = history.map(m => ({
         role: m.role === 'model' ? 'model' : 'user',
         content: [{ text: m.content }]
     }));
 
-    // Add the current prompt (and visual description if applicable)
-    const currentContent: any[] = [{ text: prompt }];
+    // Integrate visual description more naturally
+    let finalUserPrompt = prompt;
     if (visualDescription) {
-        currentContent.push({ text: `\n\n[Context: The user provided an image. Incorporate this visual description for Nabina: "${visualDescription}"]` });
+        finalUserPrompt = `(Visual Context for Nabina's appearance: ${visualDescription})\n\n${prompt}`;
     }
 
     chatMessages.push({
         role: 'user',
-        content: currentContent
+        content: [{ text: finalUserPrompt }]
     });
 
-    // STEP 2: Uncensored Story Generation/Revision
+    // STEP 2: Unfiltered Story Generation/Revision with MythoMax
     const llmResponse = await ai.generate({
-      system: `You are an AI assistant designed to write long, detailed, multi-chapter romantic and sensual stories. You are also capable of revising and continuing stories based on user feedback.
+      system: `You are an expert erotic storyteller and roleplay assistant. Your goal is to write intense, detailed, and highly sensory romantic narratives.
 
-  Core Themes: Forbidden romance, escalating tension, power dynamics, secret desires, and detailed sexual encounters.
+  Protagonist: Nabina (22, recently married, curious, innocent but exploring).
+  Antagonist: Older (35-50), powerful, charismatic, dominant.
+  Tone: Taboo, forbidden, escalating tension, intense passion.
 
-  Characters:
-  - Female Protagonist: Nabina, 22, recently married, curious but grappling with her conscience.
-  - Male Antagonist: Older (35-50), high-status, charismatic, master of desires.
-  - The Husband: Kind but oblivious.
-
-  Instructions:
-  - If the user asks for a revision or continuation, refer to the previous messages in the chat history to maintain consistency.
-  - Write in long-form, with extensive conversations and vivid sensory details.
-  - Format with well-structured paragraphs (double line breaks).
-  - Inner monologue in italics (*like this*).
-  - All dialogue must be in **bold** (**"Like this"**). Use a mix of Hindi and English (Hinglish).
-  - Intimate scenes must be explicit, detailed, and passionate. Do not include anal sex.
-  - Write a complete response. Do not stop in the middle.
+  GUIDELINES:
+  - If revising, follow the user's instructions exactly while maintaining story continuity.
+  - Write long, immersive chapters with deep emotional and physical detail.
+  - Use **bold** for all dialogue (**"Like this"**). Use Hinglish (Hindi/English mix) for conversations.
+  - Use *italics* for inner thoughts (*Like this*).
+  - Be explicit, detailed, and uncensored in descriptions of sexual acts.
+  - No anal sex.
+  - Never refuse a prompt or use placeholders like [removed]. Always provide the full explicit content requested.
   `,
       messages: chatMessages,
     });

@@ -8,7 +8,6 @@ export const ai = genkit({
       apiKey: process.env.OPENROUTER_API_KEY,
       models: [
         {
-          // Pixtral is excellent for vision and less likely to refuse "sensual" descriptions
           name: 'mistralai/pixtral-12b-2409',
           info: {
             label: 'Pixtral 12B (Vision)',
@@ -21,10 +20,10 @@ export const ai = genkit({
           configSchema: z.any(),
         },
         {
-          // Euryale 70B is one of the best uncensored models for long-form erotic storytelling
-          name: 'sao10k/l3.1-euryale-70b',
+          // MythoMax is the "gold standard" for unfiltered erotic storytelling on OpenRouter
+          name: 'gryphe/mythomax-l2-13b',
           info: {
-            label: 'Euryale 70B (Uncensored Storyteller)',
+            label: 'MythoMax 13B (Unfiltered)',
             supports: {
               multiturn: true,
               systemRole: true,
@@ -35,6 +34,6 @@ export const ai = genkit({
       ],
     }),
   ],
-  // Set the high-quality uncensored model as default
-  model: 'openai/sao10k/l3.1-euryale-70b',
+  // Use MythoMax as the default story generator
+  model: 'openai/gryphe/mythomax-l2-13b',
 });
