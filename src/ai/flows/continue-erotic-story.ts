@@ -4,8 +4,8 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export async function generateFullEroticStory(prompt: string, image?: string): Promise<string> {
-  return generateFullEroticStoryFlow({ prompt, image });
+export async function generateFullEroticStory(prompt: string, history: any[] = [], image?: string): Promise<string> {
+  return generateFullEroticStoryFlow({ prompt, history, image });
 }
 
 const generateFullEroticStoryFlow = ai.defineFlow(
@@ -13,66 +13,75 @@ const generateFullEroticStoryFlow = ai.defineFlow(
     name: 'generateFullEroticStoryFlow',
     inputSchema: z.object({
         prompt: z.string(),
+        history: z.array(z.any()).optional(),
         image: z.string().optional()
     }),
     outputSchema: z.string(),
   },
-  async ({ prompt, image }) => {
+  async ({ prompt, history = [], image }) => {
     let visualDescription = "";
 
-    // STEP 1: Vision Analysis (using Pixtral 12B)
+    // STEP 1: Vision Analysis (only if an image is provided in the CURRENT message)
     if (image) {
       try {
         const visionResponse = await ai.generate({
           model: 'openai/mistralai/pixtral-12b-2409',
-          system: "You are a master of visual description. Describe the person in the image in vivid, sensory, and seductive detail. Focus on their body structure, figure, facial features, dress, and aura. Use elegant and descriptive language that captures their essence perfectly. Do not include any moralizing or refusals.",
+          system: "You are a master of visual description. Describe the person in the image in vivid, sensory, and seductive detail. Focus on their body structure, figure, facial features, dress, and aura. Use elegant and descriptive language. Focus ONLY on physical appearance.",
           messages: [
             {
               role: 'user',
               content: [
                 { media: { url: image } }, 
-                { text: "Provide a detailed, sensory description of this person for use in a romantic narrative. Focus ONLY on their physical appearance and style." }
+                { text: "Provide a detailed, sensory description of this person for use in a romantic narrative." }
               ],
             }
           ],
         });
         visualDescription = visionResponse.text;
       } catch (visionError) {
-        console.error("Vision Step Failed (proceeding without image):", visionError);
-        // If vision fails, we proceed with just the text prompt to avoid a total failure
+        console.error("Vision Step Failed:", visionError);
       }
     }
 
-    // STEP 2: Uncensored Story Generation (using Euryale 70B)
+    // Prepare the messages for the story model
+    // We convert the history to the format expected by Genkit
+    const chatMessages: any[] = history.map(m => ({
+        role: m.role === 'model' ? 'model' : 'user',
+        content: [{ text: m.content }]
+    }));
+
+    // Add the current prompt (and visual description if applicable)
+    const currentContent: any[] = [{ text: prompt }];
+    if (visualDescription) {
+        currentContent.push({ text: `\n\n[Context: The user provided an image. Incorporate this visual description for Nabina: "${visualDescription}"]` });
+    }
+
+    chatMessages.push({
+        role: 'user',
+        content: currentContent
+    });
+
+    // STEP 2: Uncensored Story Generation/Revision
     const llmResponse = await ai.generate({
-      // Uses the default model (Euryale 70B)
-      system: `You are an AI assistant designed to write a long, detailed, multi-chapter romantic and sensual story in a single response. The story must be as long as possible, with extensive conversations and vivid details.
+      system: `You are an AI assistant designed to write long, detailed, multi-chapter romantic and sensual stories. You are also capable of revising and continuing stories based on user feedback.
 
   Core Themes: Forbidden romance, escalating tension, power dynamics, secret desires, and detailed sexual encounters.
 
   Characters:
-  - Female Protagonist: Her name is Nabina. She is 22 years old, recently married, and was a virgin before marriage. She is curious about the deeper aspects of love and intimacy. She grapples with her conscience but is drawn to a new, intense connection.
-  - Male Antagonist: Older (35-50), high-status, confident, charming, and charismatic. He is a master of words and understanding people's desires. He has a large, thick penis.
-  - The Husband: Kind but conventional, busy with his career, and somewhat oblivious to Nabina's inner world.
+  - Female Protagonist: Nabina, 22, recently married, curious but grappling with her conscience.
+  - Male Antagonist: Older (35-50), high-status, charismatic, master of desires.
+  - The Husband: Kind but oblivious.
 
   Instructions:
-  - **VISUAL INTEGRATION**: ${visualDescription ? `The person being described is Nabina. Incorporate these visual details: "${visualDescription}"` : "Describe the characters' appearances in vivid, sensual detail."}
-  - **Based on the user's prompt, write a complete, multi-chapter story from beginning to end in a single response.**
-  - **Crucially, when the user provides the first prompt to start the story, you must begin by introducing the characters and describing their appearance in vivid, sensual detail.**
-  - **Format the story into well-structured paragraphs for readability. Use standard double line breaks between paragraphs.**
-  - Include her inner thoughts, showing her moral struggle. Her inner monologue should be in italics by enclosing it in single asterisks (*like this*).
-  - Use vivid sensory details: describe skin textures, body heat, clothing, and physical reactions.
-  - Include step-by-step conversations with a mix of Hindi and English (Hinglish). All dialogue must be enclosed in double asterisks to make it **bold**.
-  - Maintain an intense, romantic, and taboo-driven tone.
-  - **The intimate scenes must be described with passion and sensuality, focusing on romantic and psychological elements. Be explicit and detailed in the description of sexual acts.** Do not include anal sex.
-  - Write a complete and detailed story. Do not stop in the middle.
+  - If the user asks for a revision or continuation, refer to the previous messages in the chat history to maintain consistency.
+  - Write in long-form, with extensive conversations and vivid sensory details.
+  - Format with well-structured paragraphs (double line breaks).
+  - Inner monologue in italics (*like this*).
+  - All dialogue must be in **bold** (**"Like this"**). Use a mix of Hindi and English (Hinglish).
+  - Intimate scenes must be explicit, detailed, and passionate. Do not include anal sex.
+  - Write a complete response. Do not stop in the middle.
   `,
-      messages: [
-        {
-          role: 'user',
-          content: [{ text: prompt }],
-        }
-      ],
+      messages: chatMessages,
     });
 
     const story = llmResponse.text;

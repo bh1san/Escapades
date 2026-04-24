@@ -68,7 +68,7 @@ export async function handleChat(
   ];
 
   try {
-    const story = await generateFullEroticStory(finalPrompt, imageStr || undefined);
+    const story = await generateFullEroticStory(finalPrompt, historyMessages, imageStr || undefined);
     if (typeof story === 'string' && story.length > 0) {
       return {
         messages: [...newMessages, { role: "model", content: story }],
