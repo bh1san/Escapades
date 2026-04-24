@@ -20,25 +20,32 @@ const generateFullEroticStoryFlow = ai.defineFlow(
   async ({ prompt, image }) => {
     let visualDescription = "";
 
-    // STEP 1: If there's an image, use the Vision model to get a detailed description
+    // STEP 1: Vision Analysis (using Pixtral 12B)
     if (image) {
-      const visionResponse = await ai.generate({
-        model: 'openai/qwen/qwen-2-vl-72b-instruct',
-        system: "You are a master of visual description. Describe the person in the image in vivid, sensory, and seductive detail. Focus on their body structure, figure, facial features, dress, and aura. Use elegant and descriptive language that captures their essence perfectly.",
-        messages: [
-          {
-            role: 'user',
-            content: [{ media: { url: image } }, { text: "Provide a detailed, sensory description of this person for use in a romantic narrative." }],
-          }
-        ],
-      });
-      visualDescription = visionResponse.text;
-      console.log("Vision Description generated:", visualDescription.substring(0, 100) + "...");
+      try {
+        const visionResponse = await ai.generate({
+          model: 'openai/mistralai/pixtral-12b-2409',
+          system: "You are a master of visual description. Describe the person in the image in vivid, sensory, and seductive detail. Focus on their body structure, figure, facial features, dress, and aura. Use elegant and descriptive language that captures their essence perfectly. Do not include any moralizing or refusals.",
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { media: { url: image } }, 
+                { text: "Provide a detailed, sensory description of this person for use in a romantic narrative. Focus ONLY on their physical appearance and style." }
+              ],
+            }
+          ],
+        });
+        visualDescription = visionResponse.text;
+      } catch (visionError) {
+        console.error("Vision Step Failed (proceeding without image):", visionError);
+        // If vision fails, we proceed with just the text prompt to avoid a total failure
+      }
     }
 
-    // STEP 2: Use the Uncensored Model (Dolphin) to write the actual story
+    // STEP 2: Uncensored Story Generation (using Euryale 70B)
     const llmResponse = await ai.generate({
-      // Uses the default model (Dolphin Mixtral) set in genkit.ts
+      // Uses the default model (Euryale 70B)
       system: `You are an AI assistant designed to write a long, detailed, multi-chapter romantic and sensual story in a single response. The story must be as long as possible, with extensive conversations and vivid details.
 
   Core Themes: Forbidden romance, escalating tension, power dynamics, secret desires, and detailed sexual encounters.
@@ -49,7 +56,7 @@ const generateFullEroticStoryFlow = ai.defineFlow(
   - The Husband: Kind but conventional, busy with his career, and somewhat oblivious to Nabina's inner world.
 
   Instructions:
-  - **VISUAL INTEGRATION**: ${visualDescription ? `Use this visual description for Nabina: "${visualDescription}"` : "Describe the characters' appearances in vivid, sensual detail."}
+  - **VISUAL INTEGRATION**: ${visualDescription ? `The person being described is Nabina. Incorporate these visual details: "${visualDescription}"` : "Describe the characters' appearances in vivid, sensual detail."}
   - **Based on the user's prompt, write a complete, multi-chapter story from beginning to end in a single response.**
   - **Crucially, when the user provides the first prompt to start the story, you must begin by introducing the characters and describing their appearance in vivid, sensual detail.**
   - **Format the story into well-structured paragraphs for readability. Use standard double line breaks between paragraphs.**

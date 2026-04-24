@@ -8,9 +8,10 @@ export const ai = genkit({
       apiKey: process.env.OPENROUTER_API_KEY,
       models: [
         {
-          name: 'qwen/qwen-2-vl-72b-instruct',
+          // Pixtral is excellent for vision and less likely to refuse "sensual" descriptions
+          name: 'mistralai/pixtral-12b-2409',
           info: {
-            label: 'Qwen 2 VL 72B (Vision)',
+            label: 'Pixtral 12B (Vision)',
             supports: {
               multiturn: true,
               systemRole: true,
@@ -20,9 +21,10 @@ export const ai = genkit({
           configSchema: z.any(),
         },
         {
-          name: 'cognitivecomputations/dolphin3.0-mistral-24b',
+          // Euryale 70B is one of the best uncensored models for long-form erotic storytelling
+          name: 'sao10k/l3.1-euryale-70b',
           info: {
-            label: 'Dolphin 3.0 Mistral 24B (Uncensored)',
+            label: 'Euryale 70B (Uncensored Storyteller)',
             supports: {
               multiturn: true,
               systemRole: true,
@@ -33,6 +35,6 @@ export const ai = genkit({
       ],
     }),
   ],
-  // Default to the new uncensored model
-  model: 'openai/cognitivecomputations/dolphin3.0-mistral-24b',
+  // Set the high-quality uncensored model as default
+  model: 'openai/sao10k/l3.1-euryale-70b',
 });
