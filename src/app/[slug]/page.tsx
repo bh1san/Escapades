@@ -8,6 +8,7 @@ import {
   SUPPORTED_QUOTE_CURRENCIES,
   SUPPORTED_EXCHANGES,
   getTopProgrammaticRoutes,
+  parseProgrammaticSlug,
 } from "@/config/seo-data";
 import { getCoinTrackerAffiliateUrl, getExchangeAffiliateUrl } from "@/config/affiliates";
 import {
@@ -32,20 +33,31 @@ import {
 
 interface PageProps {
   params: Promise<{
-    baseCurrency: string;
-    quoteCurrency: string;
-    exchange: string;
+    slug: string;
   }>;
 }
 
 // 1. Programmatic SEO: Generate static params for SSG
 export async function generateStaticParams() {
-  return getTopProgrammaticRoutes();
+  const routes = getTopProgrammaticRoutes();
+  return routes.map((r) => ({
+    slug: `${r.baseCurrency}-to-${r.quoteCurrency}-on-${r.exchange}`,
+  }));
 }
 
 // 2. Programmatic SEO: High-intent Dynamic Metadata
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { baseCurrency, quoteCurrency, exchange } = await params;
+  const { slug } = await params;
+  const parsed = parseProgrammaticSlug(slug);
+
+  if (!parsed) {
+    return {
+      title: "Crypto Tax Calculator | Project Genesis",
+      description: "Calculate crypto capital gains tax, trading fees, and net profit across exchanges.",
+    };
+  }
+
+  const { baseCurrency, quoteCurrency, exchange } = parsed;
 
   const base = SUPPORTED_BASE_CURRENCIES[baseCurrency.toLowerCase()] || {
     symbol: baseCurrency.toUpperCase(),
@@ -84,13 +96,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
     },
     alternates: {
-      canonical: `/${baseCurrency.toLowerCase()}-to-${quoteCurrency.toLowerCase()}-on-${exchange.toLowerCase()}`,
+      canonical: `/${slug.toLowerCase()}`,
     },
   };
 }
 
 export default async function ProgrammaticCryptoTaxPage({ params }: PageProps) {
-  const { baseCurrency, quoteCurrency, exchange } = await params;
+  const { slug } = await params;
+  const parsed = parseProgrammaticSlug(slug);
+
+  if (!parsed) {
+    notFound();
+  }
+
+  const { baseCurrency, quoteCurrency, exchange } = parsed;
 
   const base = SUPPORTED_BASE_CURRENCIES[baseCurrency.toLowerCase()] || {
     symbol: baseCurrency.toUpperCase(),
@@ -153,7 +172,7 @@ export default async function ProgrammaticCryptoTaxPage({ params }: PageProps) {
             "@type": "ListItem",
             "position": 3,
             "name": `${base.symbol} to ${quote.symbol} on ${ex.name}`,
-            "item": `/${baseCurrency.toLowerCase()}-to-${quoteCurrency.toLowerCase()}-on-${exchange.toLowerCase()}`,
+            "item": `/${slug.toLowerCase()}`,
           },
         ],
       },
@@ -369,7 +388,7 @@ export default async function ProgrammaticCryptoTaxPage({ params }: PageProps) {
               .map(([qKey, qInfo]) => (
                 <Link
                   key={qKey}
-                  href={`/${baseCurrency.toLowerCase()}-to-${qKey}-on-${exchange.toLowerCase()}`}
+                  href={`/${base.symbol.toLowerCase()}-to-${qKey}-on-${exchange.toLowerCase()}`}
                   className="p-2.5 rounded-lg border border-border/60 hover:border-primary/50 hover:bg-muted/30 transition-all text-xs flex items-center justify-between group"
                 >
                   <span>{base.symbol} to {qInfo.symbol} ({ex.name})</span>
@@ -383,7 +402,7 @@ export default async function ProgrammaticCryptoTaxPage({ params }: PageProps) {
               .map(([exKey, exInfo]) => (
                 <Link
                   key={exKey}
-                  href={`/${baseCurrency.toLowerCase()}-to-${quoteCurrency.toLowerCase()}-on-${exKey}`}
+                  href={`/${base.symbol.toLowerCase()}-to-${quoteCurrency.toLowerCase()}-on-${exKey}`}
                   className="p-2.5 rounded-lg border border-border/60 hover:border-primary/50 hover:bg-muted/30 transition-all text-xs flex items-center justify-between group"
                 >
                   <span>{base.symbol}/{quote.symbol} on {exInfo.name}</span>

@@ -97,3 +97,22 @@ export function getTopProgrammaticRoutes(): Array<{
 
   return routes;
 }
+
+/**
+ * Parses a programmatic SEO slug in the format: {baseCurrency}-to-{quoteCurrency}-on-{exchange}
+ * Example: "btc-to-usd-on-binance" -> { baseCurrency: "btc", quoteCurrency: "usd", exchange: "binance" }
+ */
+export function parseProgrammaticSlug(slug: string): {
+  baseCurrency: string;
+  quoteCurrency: string;
+  exchange: string;
+} | null {
+  if (!slug || typeof slug !== "string") return null;
+  const match = slug.toLowerCase().match(/^([a-z0-9]+)-to-([a-z0-9]+)-on-([a-z0-9]+)$/);
+  if (!match) return null;
+  return {
+    baseCurrency: match[1],
+    quoteCurrency: match[2],
+    exchange: match[3],
+  };
+}
