@@ -134,7 +134,7 @@ export function Chat({ initialState }: ChatProps) {
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey && !isPending && (input.trim() || imagePreview)) {
       event.preventDefault();
-      formRef.current?.querySelector('button[value="generate_story"]')?.click();
+      (formRef.current?.querySelector('button[value="generate_story"]') as HTMLButtonElement | null)?.click();
     }
   };
 
